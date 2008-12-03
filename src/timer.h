@@ -24,6 +24,28 @@
 #ifndef TIMER_H
 #define TIMER_H
 
+#define TIMER_REFRESH_RATE  100
+
+typedef struct
+{
+  GTimeVal *start_time;
+  glong seconds;
+  gint mseconds;
+  void (*callback)();
+} ut_timer;
+
+typedef struct {
+  glong tv_sec;
+  glong tv_usec;
+  gboolean negative;
+} GTimeValDiff;
+
+
+int           update_timer              (ut_timer *t);
+int           sleep_timer               (ut_timer *t);
+GTimeValDiff  get_diff                  (GTimeVal start, GTimeVal end);
+int           start_thread_timer        (ut_timer *t);
+
 
 
 #endif /* TIMER_H */

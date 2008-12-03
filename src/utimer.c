@@ -35,6 +35,7 @@
 
 
 #include "utimer.h"
+#include "timer.h"
 
 
 void set_tty_canonical(int state)
@@ -59,32 +60,23 @@ void set_tty_canonical(int state)
 
 void quitloop ()
 {
+  g_print("\n");
   g_debug (_("Stopping Main Loop..."));
   g_main_loop_quit (loop);
   g_debug (_("Main Loop stopped."));
 }
 
-int test ()
+int check_exit_from_user ()
 {
   gint c;
   do
   {
     c = fgetc(stdin);
-  } while(c != 'q' || c == 27);
+    g_print("\b ");
+  } while(c != 'q' || c == 27); // checks for 'q' key or Escape
+  
+  // If the user asks for exiting, we stop the loop.
   quitloop();
-}
-
-int test2 ()
-{
-  GTimeVal tval;
-  
-  g_get_current_time(&tval);
-  
-  g_print("t: %u", tval.tv_usec);
-  
-  g_usleep(0500000);
-  g_print("\r");
-  return TRUE;
 }
 
 int main (int argc, char *argv[])
@@ -95,15 +87,26 @@ int main (int argc, char *argv[])
   gint    i;
 
   /* Some init */
-  set_tty_canonical(1);
-  if (!g_thread_supported())
-    g_thread_init(NULL);
+  g_thread_init(NULL);
   g_type_init();
+  
   g_set_prgname (PACKAGE);
   bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
   
+  set_tty_canonical(1);
+  
+  // Get the current time
+  GTimeVal start_time;
+  g_get_current_time(&start_time);
+  
+  g_print("G_MAXULONG = %lu\n", G_MAXULONG);
+  g_print("G_MAXLONG  = %ld\n", G_MAXLONG);
+  g_print("G_MAXUINT  = %u\n", G_MAXUINT);
+  
+  // Set the function to call in case of receiving signals:
+  // we need to stop the main loop to exit gracefully
   signal(SIGALRM,  quitloop);
   signal(SIGHUP,   quitloop);
   signal(SIGINT,   quitloop);
@@ -128,6 +131,7 @@ int main (int argc, char *argv[])
     }
   }
   
+  
   /* Parse the options */
   tmp = g_strconcat (_("[ARGUMENTS] - "), SHORTDESCRIPTION, NULL);
   context = g_option_context_new (tmp);
@@ -136,9 +140,9 @@ int main (int argc, char *argv[])
   g_option_context_set_summary (context, SUMMARY);
   
   tmp = g_strconcat (DESCRIPTION, 
-                     _("\nReport any bug to "),
-                     PACKAGE_BUGREPORT, 
-                     ".",
+                     _("\nReport any bug to: https://bugs.launchpad.net/utimer or bugs@utimer.codealpha.net"),
+                     //~ PACKAGE_BUGREPORT, 
+                     //~ ".",
                      NULL);
   g_option_context_set_description (context, tmp);
   g_free (tmp);
@@ -181,30 +185,86 @@ int main (int argc, char *argv[])
       g_message("argument: %s", tmp);
       i++;
     }
-  
   }
   else
   {
     g_message(_("No argument found."));
   }
-  
+   
   /* Now that we treated every arg, we can free remaining_args. */
   g_strfreev(remaining_args);
   
-  /** Prepare for starting the main loop **/
+  /*==== Prepare for starting the main loop ====*/
   
   loop = g_main_loop_new (NULL, FALSE);
   g_timeout_add_seconds(20, (GSourceFunc) quitloop, NULL);
   
-  if (!g_thread_create((GThreadFunc) test, NULL, FALSE, &error))
+  
+  g_idle_add((GSourceFunc) start_thread_exit_check, NULL);
+  
+  if(isTimer)
+  {
+    ut_timer ttimer;
+    
+    g_debug("Timer Mode");
+    g_message(_("Your computer supports sleeping for a maximum of ~%u years (%u days)."),
+              get_maximum_sleep(TU_YEAR), get_maximum_sleep(TU_DAY));
+    ttimer.callback   = quitloop;
+    ttimer.start_time = &start_time;
+    ttimer.seconds    = atol(isTimer); /** TODO: USE A PATTERN AND A REGEX **/
+    ttimer.mseconds   = 0;
+    
+    g_debug("seconds= %ld (%s)", ttimer.seconds, isTimer);
+    g_idle_add((GSourceFunc) start_thread_timer, &ttimer);
+    g_timeout_add(TIMER_REFRESH_RATE,
+                  (GSourceFunc) update_timer,
+                  &ttimer);
+  }
+  
+  g_debug (_("Starting main loop..."));
+  g_main_loop_run (loop);
+  g_debug (_("Quitted main loop..."));
+  
+  
+  set_tty_canonical(0);
+  
+  /** TODO: Exit with error code when trap/signal (necessary for scripts) **/
+  return EXIT_SUCCESS;
+}
+
+int start_thread_exit_check ()
+{
+  GError  *error = NULL;
+  
+  g_debug("Starting thread exit check");
+  if (!g_thread_create((GThreadFunc) check_exit_from_user, NULL, FALSE, &error))
   {
     g_error (_("Thread failed: %s"), error->message);
   }
   
-  g_idle_add((GSourceFunc) test2, NULL);
-  g_debug (_("Starting main loop..."));
-  g_main_loop_run (loop);
-  g_debug (_("Quitted main loop..."));
-  set_tty_canonical(0);
-  return EXIT_SUCCESS;
+  return FALSE; // to get removed from the main loop
+}
+
+guint get_maximum_sleep(TimeUnit unit)
+{
+  
+  if(unit == TU_SECOND)
+    return G_MAXUINT;
+  
+  if(unit == TU_MINUTE)
+    return G_MAXUINT/60;
+  
+  if(unit == TU_HOUR)
+    return G_MAXUINT/3600;
+  
+  if(unit == TU_DAY)
+    return G_MAXUINT/86400;
+  
+  if(unit == TU_MONTH)
+    return G_MAXUINT/(30*86400);
+    
+  if(unit == TU_YEAR)
+    return G_MAXUINT/(365*86400);
+  
+  return G_MAXUINT;
 }
