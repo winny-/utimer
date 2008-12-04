@@ -43,7 +43,7 @@ int timer_update (ut_timer *t)
   
   delta = timer_get_diff(*(t->start_time), current_time, &check_overflow);
   g_print("\rElapsed Time: %s", timer_gtvaldiff_to_string(delta));
-  t->last_diff = delta;
+  t->last_diff = &delta;
   return TRUE;
 }
 
@@ -70,7 +70,7 @@ static GTimeValDiff timer_get_diff (GTimeVal start, GTimeVal end, gboolean *must
                     || end.tv_sec == start.tv_sec
                        && end.tv_usec >= start.tv_usec);
   
-  if(*must_be_positive && (diff.negative || TRUE))
+  if(*must_be_positive && diff.negative)
   {
     g_warning("\n***************** IMPORTANT *****************");
     g_warning("Possible overflow! (is it Year 2038 bug?). The start time is after the current time!");

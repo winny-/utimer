@@ -28,20 +28,20 @@
 
 #include "utils.h"
 
-typedef struct
-{
-  GTimeVal      *start_time;
-  gulong        seconds;
-  gulong        mseconds;
-  GTimeValDiff  last_diff = NULL;
-  void          (*callback)();
-} ut_timer;
-
 typedef struct {
   glong     tv_sec;
   glong     tv_usec;
   gboolean  negative;
 } GTimeValDiff;
+
+typedef struct
+{
+  GTimeVal      *start_time;
+  gulong        seconds;
+  gulong        mseconds;
+  GTimeValDiff  *last_diff;
+  void          (*callback)();
+} ut_timer;
 
 int           timer_update              (ut_timer *t);
 int           timer_sleep               (ut_timer *t);
