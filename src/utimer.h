@@ -50,21 +50,11 @@ static GOptionEntry entries[] = {
   {NULL}
 };
 
-typedef enum
-{
-  TU_DAY   = 0,
-  TU_MONTH = 1,
-  TU_YEAR  = 2,
-  TU_HOUR = 3,
-  TU_MINUTE = 4,
-  TU_SECOND = 5
-} TimeUnit;
-
 void      quitloop                    ();
 int       start_thread_exit_check     ();
 int       check_exit_from_user        ();
 void      quitloop                    ();
 void      set_tty_canonical           (int state);
-guint     get_maximum_sleep           (TimeUnit unit);
+
 
 #endif /* UTIMER_H */

@@ -26,26 +26,41 @@
 
 #define TIMER_REFRESH_RATE  100
 
+#include "utils.h"
+
 typedef struct
 {
-  GTimeVal *start_time;
-  glong seconds;
-  gint mseconds;
-  void (*callback)();
+  GTimeVal      *start_time;
+  gulong        seconds;
+  gulong        mseconds;
+  GTimeValDiff  last_diff = NULL;
+  void          (*callback)();
 } ut_timer;
 
 typedef struct {
-  glong tv_sec;
-  glong tv_usec;
-  gboolean negative;
+  glong     tv_sec;
+  glong     tv_usec;
+  gboolean  negative;
 } GTimeValDiff;
 
+int           timer_update              (ut_timer *t);
+int           timer_sleep               (ut_timer *t);
+int           timer_start_thread        (ut_timer *t);
+gulong        timer_get_maximum_value   (TimeUnit unit);
+gchar*        timer_get_maximum_pattern ();
+gboolean      timer_parse_pattern       (gchar *pattern, ut_timer* timer);
+void          timer_add_seconds         (ut_timer* timer, gulong seconds);
+void          timer_add_milliseconds    (ut_timer* timer, gulong milliseconds);
+GTimeVal      gtvaldiff_to_gtval        (GTimeValDiff g);
+gchar*        timer_sec_msec_to_string  (gulong sec, gulong msec);
+gchar*        timer_get_maximum_time    ();
+gchar*        timer_ut_timer_to_string  (ut_timer g);
+gchar*        timer_gtvaldiff_to_string (GTimeValDiff g);
 
-int           update_timer              (ut_timer *t);
-int           sleep_timer               (ut_timer *t);
-GTimeValDiff  get_diff                  (GTimeVal start, GTimeVal end);
-int           start_thread_timer        (ut_timer *t);
+static 
+gboolean      timer_apply_suffix        (gulong* value, gchar* suffix);
 
-
-
+static
+GTimeValDiff  timer_get_diff            (GTimeVal start, GTimeVal end,
+                                         gboolean *must_be_positive);
 #endif /* TIMER_H */

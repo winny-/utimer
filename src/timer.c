@@ -26,45 +26,43 @@
 #  include <config.h>
 #endif
 
-//~ #include <stdio.h>
-//~ #include <unistd.h>
-//~ #include <stdlib.h>
-//~ #include <termios.h>
-
+#include <stdlib.h>
+#include <errno.h>
 #include <glib.h>
 #include <glib/gi18n-lib.h>
 
 #include "timer.h"
 
-int update_timer(ut_timer *t)
+int timer_update (ut_timer *t)
 {
   GTimeVal current_time;
   GTimeValDiff delta;
+  static gboolean check_overflow = TRUE;
 
   g_get_current_time(&current_time);
   
-  delta = get_diff(*(t->start_time), current_time);
-  /** TODO: BETTER FORMATTING **/
-  g_print("\rElasped Time: %ld.%06ld", delta.tv_sec, delta.tv_usec);
-  
+  delta = timer_get_diff(*(t->start_time), current_time, &check_overflow);
+  g_print("\rElapsed Time: %s", timer_gtvaldiff_to_string(delta));
+  t->last_diff = delta;
   return TRUE;
 }
 
-int sleep_timer(ut_timer *t)
+int timer_sleep (ut_timer *t)
 {
-  g_debug("sleeping for %ld.%06d seconds", t->seconds, t->mseconds*1000);
+  g_debug("sleeping for %lu.%03lu seconds", t->seconds, t->mseconds);
+  //~ g_debug("Stop time: ", timer_to_string(gtvaldiff_to_gtval(t)));
   g_print("\n");
-  update_timer(t);
+  timer_update(t);
   if(t->seconds>0)
     sleep(t->seconds);
   if(t->mseconds>0)
     g_usleep(t->mseconds*1000);
-  update_timer(t);
+  timer_update(t);
   t->callback();
   return TRUE;
 }
 
-GTimeValDiff get_diff(GTimeVal start, GTimeVal end)
+static GTimeValDiff timer_get_diff (GTimeVal start, GTimeVal end, gboolean *must_be_positive)
 {
   GTimeValDiff diff;
   GTimeVal *ptr_start, *ptr_end;
@@ -72,6 +70,15 @@ GTimeValDiff get_diff(GTimeVal start, GTimeVal end)
   diff.negative = !(end.tv_sec > start.tv_sec
                     || end.tv_sec == start.tv_sec
                        && end.tv_usec >= start.tv_usec);
+  
+  if(*must_be_positive && (diff.negative || TRUE))
+  {
+    g_warning("\n***************** IMPORTANT *****************");
+    g_warning("Possible overflow! (is it Year 2038 bug?). The start time is after the current time!");
+    g_warning("IMPORTANT: The timer will continue normally but the time displayed (elapsed time) may be invalid.\n");
+    *must_be_positive = FALSE;
+  }
+  
   if(diff.negative)
   {
     ptr_start = &end;
@@ -95,15 +102,199 @@ GTimeValDiff get_diff(GTimeVal start, GTimeVal end)
   return diff;
 }
 
-int start_thread_timer(ut_timer *t)
+int timer_start_thread (ut_timer *t)
 {
   GError  *error = NULL;
   
   g_debug("Starting Timer thread");
-  if (!g_thread_create((GThreadFunc) sleep_timer, t, FALSE, &error))
+  if (!g_thread_create((GThreadFunc) timer_sleep, t, FALSE, &error))
   {
     g_error (_("Thread failed: %s"), error->message);
   }
   
   return FALSE; // to get removed from the main loop
+}
+
+gulong timer_get_maximum_value (TimeUnit unit)
+{
+  if(unit == TU_MILLISECOND)
+    return G_MAXULONG/1000;
+  
+  if(unit == TU_SECOND)
+    return G_MAXULONG;
+  
+  if(unit == TU_MINUTE)
+    return G_MAXUSHORT;
+  
+  if(unit == TU_HOUR)
+    return G_MAXUSHORT;
+  
+  if(unit == TU_DAY)
+    return G_MAXUSHORT;
+  
+  if(unit == TU_YEAR)
+    return G_MAXUSHORT;
+  
+  g_critical("%s doesn't support given unit (%d).", __FUNCTION__, unit);
+}
+
+gchar* timer_get_maximum_pattern ()
+{
+  return g_strdup_printf("%lud%luh%lum%lus%lums",
+                         timer_get_maximum_value(TU_DAY),
+                         timer_get_maximum_value(TU_HOUR),
+                         timer_get_maximum_value(TU_MINUTE),
+                         timer_get_maximum_value(TU_SECOND),
+                         timer_get_maximum_value(TU_MILLISECOND));
+}
+
+gchar* timer_get_maximum_time()
+{
+  ut_timer t;
+  t.seconds = G_MAXULONG;
+  t.mseconds = 999;
+  
+  return timer_ut_timer_to_string(t);
+}
+
+gboolean timer_parse_pattern (gchar *pattern, ut_timer* timer)
+{
+  /** TODO: CHECK FOR OVERFLOWING VALUES **/
+
+  int base = 10;
+  gchar *endptr, *tmp;
+  
+  gulong val;
+  
+  if(!pattern)
+    return FALSE;
+  
+  tmp = pattern;
+  
+  do
+  {
+    g_debug("Parsing: %s", tmp);
+    
+    errno = 0;    /* To distinguish success/failure after call */
+    
+    val = strtoul(tmp, &endptr, base);
+    g_debug("strtol() returned %ld", val);
+    
+    
+    /* Check for various possible errors */
+    
+    if (errno == ERANGE && val == G_MAXULONG)
+    {
+      if(*endptr == '\0')
+        g_warning(_("The last number is too big. It has been changed into: %ld"), val);
+      else
+        g_warning(_("The number before '%s' is too big. It has been changed into: %ld"), endptr, val);
+    }
+    
+    if(endptr && g_str_has_prefix(endptr, "ms")) // if parsing the milliseconds
+    {
+      timer_add_milliseconds(timer, val);
+      endptr = endptr + 2;
+    }
+    else if(endptr && timer_apply_suffix(&val, endptr)) // if parsing another unit
+    {
+      timer_add_seconds(timer, val);
+      if(*endptr != '\0')
+        endptr = endptr + 1;
+    }
+    else
+    {
+      g_error("Error when trying to parse: %s", endptr);
+    }
+    
+    
+    
+    tmp = endptr;
+    
+  }
+  while(*endptr != '\0');
+
+}
+
+void timer_add_seconds(ut_timer* timer, gulong seconds)
+{
+  g_debug("Adding %ld seconds", seconds);
+  timer->seconds = ul_add(timer->seconds, seconds);
+  g_debug("timer.seconds = %ld", timer->seconds);
+}
+
+void timer_add_milliseconds(ut_timer* timer, gulong milliseconds)
+{
+  gulong bonus_seconds;
+  gulong diff;
+  
+  bonus_seconds = milliseconds / 1000;
+  if(bonus_seconds>0)
+  {
+    timer_add_seconds(timer, bonus_seconds);
+    milliseconds -= bonus_seconds * 1000;
+  }
+  
+  timer->mseconds = ul_add(timer->mseconds, milliseconds);
+}
+
+
+static gboolean timer_apply_suffix (gulong* value, gchar* suffix)
+{
+  int factor;
+
+  switch (*suffix)
+    {
+    case 0:
+    case 's':
+      factor = 1;
+      break;
+    case 'm':
+      factor = 60;
+      break;
+    case 'h':
+      factor = 60 * 60;
+      break;
+    case 'd':
+      factor = 60 * 60 * 24;
+      break;
+    default:
+      return FALSE;
+    }
+  
+  g_debug("applying factor %d to %ld", factor, *value);
+  (*value) = ul_mul(*value, factor);
+
+  return TRUE;
+}
+
+gchar* timer_sec_msec_to_string(gulong sec, gulong msec)
+{
+  g_assert(msec < 1000);
+  gulong all_secs = sec;
+  gint days = sec / 86400;
+  sec -= days * 86400;
+  gint hours = sec / 3600;
+  sec -= hours * 3600;
+  gint minutes = sec / 60;
+  sec -= minutes * 60;
+  
+  return g_strdup_printf("%i days %02i:%02i:%02lu.%03lu (%lu.%03lu seconds)",
+                         days,
+                         hours,
+                         minutes,
+                         sec,
+                         msec,
+                         all_secs,
+                         msec);
+}
+
+gchar* timer_gtvaldiff_to_string(GTimeValDiff g)
+{
+  return timer_sec_msec_to_string(g.tv_sec, g.tv_usec/1000);
+}
+
+gchar* timer_ut_timer_to_string(ut_timer g)
+{
+  return timer_sec_msec_to_string(g.seconds, g.mseconds);
 }

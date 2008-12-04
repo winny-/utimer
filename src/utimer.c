@@ -33,12 +33,12 @@
 #include <glib.h>
 #include <glib/gi18n-lib.h>
 
-
+#include "utils.h"
 #include "utimer.h"
 #include "timer.h"
 
 
-void set_tty_canonical(int state)
+void set_tty_canonical (int state)
 {
   struct termios ttystate;
 
@@ -63,7 +63,6 @@ void quitloop ()
   g_print("\n");
   g_debug (_("Stopping Main Loop..."));
   g_main_loop_quit (loop);
-  g_debug (_("Main Loop stopped."));
 }
 
 int check_exit_from_user ()
@@ -85,6 +84,7 @@ int main (int argc, char *argv[])
   GOptionContext *context;
   gchar   *tmp = NULL;
   gint    i;
+  ut_timer ttimer;
 
   /* Some init */
   g_thread_init(NULL);
@@ -101,9 +101,10 @@ int main (int argc, char *argv[])
   GTimeVal start_time;
   g_get_current_time(&start_time);
   
-  g_print("G_MAXULONG = %lu\n", G_MAXULONG);
-  g_print("G_MAXLONG  = %ld\n", G_MAXLONG);
+  g_print("G_MAXLONG  = %li\n", G_MAXLONG);
   g_print("G_MAXUINT  = %u\n", G_MAXUINT);
+  g_print("sizeof(gulong) = %i\n", sizeof(gulong));
+  
   
   // Set the function to call in case of receiving signals:
   // we need to stop the main loop to exit gracefully
@@ -197,29 +198,36 @@ int main (int argc, char *argv[])
   /*==== Prepare for starting the main loop ====*/
   
   loop = g_main_loop_new (NULL, FALSE);
-  g_timeout_add_seconds(20, (GSourceFunc) quitloop, NULL);
-  
   
   g_idle_add((GSourceFunc) start_thread_exit_check, NULL);
   
+  /* If timer mode selected */
   if(isTimer)
   {
-    ut_timer ttimer;
+    ttimer.seconds = 0;
+    ttimer.mseconds = 0;
     
     g_debug("Timer Mode");
-    g_message(_("Your computer supports sleeping for a maximum of ~%u years (%u days)."),
-              get_maximum_sleep(TU_YEAR), get_maximum_sleep(TU_DAY));
+    
+    tmp = timer_get_maximum_time();
+    g_debug(_("Do not use time length that exceeds %s."), tmp);
+    g_free(tmp);
+    tmp = NULL;
+    
     ttimer.callback   = quitloop;
     ttimer.start_time = &start_time;
-    ttimer.seconds    = atol(isTimer); /** TODO: USE A PATTERN AND A REGEX **/
-    ttimer.mseconds   = 0;
     
-    g_debug("seconds= %ld (%s)", ttimer.seconds, isTimer);
-    g_idle_add((GSourceFunc) start_thread_timer, &ttimer);
+    timer_parse_pattern(isTimer, &ttimer);
+    
+    g_print("Timer will exit after reaching: %s\n", timer_ut_timer_to_string(ttimer));
+    
+    g_idle_add((GSourceFunc) timer_start_thread, &ttimer);
     g_timeout_add(TIMER_REFRESH_RATE,
-                  (GSourceFunc) update_timer,
+                  (GSourceFunc) timer_update,
                   &ttimer);
   }
+  
+  /* Starting the main loop */
   
   g_debug (_("Starting main loop..."));
   g_main_loop_run (loop);
@@ -243,28 +251,4 @@ int start_thread_exit_check ()
   }
   
   return FALSE; // to get removed from the main loop
-}
-
-guint get_maximum_sleep(TimeUnit unit)
-{
-  
-  if(unit == TU_SECOND)
-    return G_MAXUINT;
-  
-  if(unit == TU_MINUTE)
-    return G_MAXUINT/60;
-  
-  if(unit == TU_HOUR)
-    return G_MAXUINT/3600;
-  
-  if(unit == TU_DAY)
-    return G_MAXUINT/86400;
-  
-  if(unit == TU_MONTH)
-    return G_MAXUINT/(30*86400);
-    
-  if(unit == TU_YEAR)
-    return G_MAXUINT/(365*86400);
-  
-  return G_MAXUINT;
 }
