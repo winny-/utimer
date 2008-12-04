@@ -50,7 +50,6 @@ int timer_update (ut_timer *t)
 int timer_sleep (ut_timer *t)
 {
   g_debug("sleeping for %lu.%03lu seconds", t->seconds, t->mseconds);
-  //~ g_debug("Stop time: ", timer_to_string(gtvaldiff_to_gtval(t)));
   g_print("\n");
   timer_update(t);
   if(t->seconds>0)
@@ -159,11 +158,8 @@ gchar* timer_get_maximum_time()
 
 gboolean timer_parse_pattern (gchar *pattern, ut_timer* timer)
 {
-  /** TODO: CHECK FOR OVERFLOWING VALUES **/
-
   int base = 10;
   gchar *endptr, *tmp;
-  
   gulong val;
   
   if(!pattern)
@@ -178,7 +174,7 @@ gboolean timer_parse_pattern (gchar *pattern, ut_timer* timer)
     errno = 0;    /* To distinguish success/failure after call */
     
     val = strtoul(tmp, &endptr, base);
-    g_debug("strtol() returned %ld", val);
+    g_debug("strtol() returned %lu", val);
     
     
     /* Check for various possible errors */
@@ -186,9 +182,9 @@ gboolean timer_parse_pattern (gchar *pattern, ut_timer* timer)
     if (errno == ERANGE && val == G_MAXULONG)
     {
       if(*endptr == '\0')
-        g_warning(_("The last number is too big. It has been changed into: %ld"), val);
+        g_warning(_("The last number is too big. It has been changed into: %lu"), val);
       else
-        g_warning(_("The number before '%s' is too big. It has been changed into: %ld"), endptr, val);
+        g_warning(_("The number before '%s' is too big. It has been changed into: %lu"), endptr, val);
     }
     
     if(endptr && g_str_has_prefix(endptr, "ms")) // if parsing the milliseconds
@@ -207,10 +203,7 @@ gboolean timer_parse_pattern (gchar *pattern, ut_timer* timer)
       g_error("Error when trying to parse: %s", endptr);
     }
     
-    
-    
     tmp = endptr;
-    
   }
   while(*endptr != '\0');
 
@@ -218,9 +211,9 @@ gboolean timer_parse_pattern (gchar *pattern, ut_timer* timer)
 
 void timer_add_seconds(ut_timer* timer, gulong seconds)
 {
-  g_debug("Adding %ld seconds", seconds);
+  g_debug("Adding %lu seconds", seconds);
   timer->seconds = ul_add(timer->seconds, seconds);
-  g_debug("timer.seconds = %ld", timer->seconds);
+  g_debug("timer.seconds = %lu", timer->seconds);
 }
 
 void timer_add_milliseconds(ut_timer* timer, gulong milliseconds)
@@ -262,7 +255,7 @@ static gboolean timer_apply_suffix (gulong* value, gchar* suffix)
       return FALSE;
     }
   
-  g_debug("applying factor %d to %ld", factor, *value);
+  g_debug("applying factor %d to %lu", factor, *value);
   (*value) = ul_mul(*value, factor);
 
   return TRUE;

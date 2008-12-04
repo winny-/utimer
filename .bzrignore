@@ -21,3 +21,4 @@ aclocal.m4
 *.o
 *.exe
 ./debian
+./src/utimer
