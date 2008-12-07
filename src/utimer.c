@@ -203,7 +203,7 @@ int main (int argc, char *argv[])
   
   if(ut_config.show_version)
   {
-    g_print("%s\n\n%s\n", PACKAGE_STRING, COPYRIGHT_TXT);
+    g_print("%s\n\n%s\n\n%s\n", PACKAGE_STRING, COPYRIGHT, COPYRIGHT_TXT);
     exit(EXIT_SUCCESS);
   }
   

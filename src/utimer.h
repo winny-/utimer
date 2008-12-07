@@ -44,6 +44,8 @@
  change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by\
  law."
 
+#define COPYRIGHT "Copyright 2008 Arnaud Soyez <weboide@codealpha.net>"
+
 
 #define DESCRIPTION ""
 

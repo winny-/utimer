@@ -1,0 +1,117 @@
+                                µTimer  0.1
+                                -----------
+
+
+Description
+-----------
+
+µTimer (or commonly written "utimer", but pronounced "micro-timer") is a
+multifunction timer (command-line only).
+It provides:
+ - a timer (e.g. count from 0 to 4 minutes),
+ - a countdown (NOT AVAILABLE in 0.1) (e.g. count from 10 minutes to 0),
+ - a stopwatch (NOT AVAILABLE in 0.1).
+
+Version Information
+-------------------
+
+Version  :  0.1
+Codename :  sunrise
+Stability:  *UNSTABLE*
+
+IMPORTANT: Note that this is an unstable version that doesn't contain all the
+           features that µTimer should be composed of.
+           This version only provides the timer function.
+
+Homepage / Download
+-------------------
+
+Homepage:         http://utimer.codealpha.net
+Launchpad Page:   https://launchpad.net/utimer
+Bug reports:      https://bugs.launchpad.net/utimer
+
+To download other releases of µTimer, use one of these download locations:
+  https://launchpad.net/utimer/+download
+  http://utimer.codealpha.net/files/
+
+Installation
+------------
+
+Please read the INSTALL file in this package to know more about how to install
+this software.
+An easy way is:
+  $ ./configure
+  $ make
+  $ make install
+Note that you may need to run "make install" as the root (or administrator)
+user (or use `sudo make install' for Debian or Ubuntu).
+
+If the `./configure' fails:
+ Try running `./autogen.sh' first, then try again with the commands above.
+
+Bugs Report
+-----------
+If you wish to submit a bug report about µTimer, please use Launchpad:
+  https://bugs.launchpad.net/utimer
+If you really can't use Launchpad, send an email with DETAILED instructions on
+the bug to: weboide@codealpha.net
+
+Ideas / Contributing
+--------------------
+
+To contribute to µTimer, you have to create what we call a blueprint using
+Launchpad, at this address: https://blueprints.launchpad.net/utimer
+Just fill the form with your idea or contribution and if we think this is a good
+idea and that is well adapted to µTimer, we'll try to implement it or put it 
+into the source code.
+
+Usage
+-----
+The only function available in this version is the Timer.
+
+Timer:
+
+  To use the timer, you have to use the -t option. This option requires a time
+  length to be given, like this:
+
+  utimer -t 1h30m45s300ms
+
+  The time length is composed of pairs of a value and a suffix, it can be in any
+  order.
+  The known suffixes are:
+
+  d: days
+  h: hours
+  m: minutes
+  s: seconds
+  ms: milliseconds
+
+  The value must be a positive integer and can be null.
+  Here's a few examples of valid time lengths:
+
+  10s300ms
+  400ms
+  2d
+  15m1h
+  0s0d87h451ms
+  0ms
+  
+  You can also use the timer in scripts, like this for example:
+  
+  utimer -t 10m && wget www.mywebsite.com/myscript
+  utimer -t 1d5h38m && reboot
+  utimer -t 500ms && do_cpu_stuff && utimer -t 500ms && do_other_cpu_stuff
+  
+
+Copyright
+---------
+
+Copyright 2008 Arnaud Soyez <weboide@codealpha.net>
+
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+For more information, please read the COPYING file and see the AUTHORS file also
+.
+
