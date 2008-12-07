@@ -3,21 +3,21 @@
  *
  *  Copyright 2008 Arnaud Soyez <weboide@codealpha.net>
  *
- *  This file is part of utimer.
- *  (utimer is a CLI program that features a timer, countdown, and a stopwatch)
+ *  This file is part of uTimer.
+ *  (uTimer is a CLI program that features a timer, countdown, and a stopwatch)
  *
- *  utimer is free software: you can redistribute it and/or modify
+ *  uTimer is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  utimer is distributed in the hope that it will be useful,
+ *  uTimer is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with utimer.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with uTimer.  If not, see <http://www.gnu.org/licenses/>.
  * 
  */
 
@@ -33,31 +33,54 @@
 
 #include "timer.h"
 
-int timer_update (ut_timer *t)
+gboolean timer_update_safe (ut_timer *t)
 {
   GTimeVal current_time;
   GTimeValDiff delta;
   static gboolean check_overflow = TRUE;
-
-  g_get_current_time(&current_time);
   
-  delta = timer_get_diff(*(t->start_time), current_time, &check_overflow);
-  g_print("\rElapsed Time: %s", timer_gtvaldiff_to_string(delta));
-  t->last_diff = &delta;
+  /* Test to see if stopped running or if the next call will be too late. */
+
+  timer_update(t);
+  
   return TRUE;
 }
 
-int timer_sleep (ut_timer *t)
+gboolean timer_update (ut_timer *t)
+{
+  GTimeVal current_time;
+  GTimeValDiff delta;
+  static gboolean check_overflow = TRUE;
+  gchar* tmpchar;
+  
+  g_mutex_lock (update_timer_mutex);
+  
+  g_get_current_time(&current_time);
+  delta = timer_get_diff(*(t->start_time), current_time, &check_overflow);
+  tmpchar = timer_gtvaldiff_to_string(delta);
+  g_print("\rElapsed Time: %s", tmpchar);
+  g_free(tmpchar);
+  t->last_diff = &delta;
+  g_mutex_unlock (update_timer_mutex);
+  
+  return TRUE;
+}
+
+gboolean timer_sleep (ut_timer *t)
 {
   g_debug("sleeping for %lu.%03lu seconds", t->seconds, t->mseconds);
   g_print("\n");
   timer_update(t);
+  
   if(t->seconds>0)
     sleep(t->seconds);
   if(t->mseconds>0)
     g_usleep(t->mseconds*1000);
+  
+  /* The Timer is done, so it should stop running. */
+  g_source_remove(t->update_timer_safe_source_id);
   timer_update(t);
-  t->callback();
+  t->success_callback();
   return TRUE;
 }
 
@@ -174,7 +197,7 @@ gboolean timer_parse_pattern (gchar *pattern, ut_timer* timer)
     errno = 0;    /* To distinguish success/failure after call */
     
     val = strtoul(tmp, &endptr, base);
-    g_debug("strtol() returned %lu", val);
+    g_debug("strtoul() returned %lu", val);
     
     
     /* Check for various possible errors */
@@ -290,4 +313,10 @@ gchar* timer_gtvaldiff_to_string(GTimeValDiff g)
 gchar* timer_ut_timer_to_string(ut_timer g)
 {
   return timer_sec_msec_to_string(g.seconds, g.mseconds);
+}
+
+void timer_init(ut_timer* t)
+{
+  t->seconds = 0;
+  t->mseconds = 0;
 }

@@ -1,5 +1,5 @@
 /*
- *  utils.h
+ *  log.h
  *
  *  Copyright 2008 Arnaud Soyez <weboide@codealpha.net>
  *
@@ -20,33 +20,17 @@
  *  along with uTimer.  If not, see <http://www.gnu.org/licenses/>.
  * 
  */
+#ifndef LOG_H
+#define LOG_H
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef g_info
+#define g_info(format...) g_log(G_LOG_DOMAIN, G_LOG_LEVEL_INFO, format)
+#endif 
 
-typedef enum
-{
-  TU_DAY    = 0,
-  TU_MONTH  = 1,
-  TU_YEAR   = 2,
-  TU_HOUR   = 3,
-  TU_MINUTE = 4,
-  TU_SECOND = 5,
-  TU_MILLISECOND = 6
-} TimeUnit;
 
-typedef enum
-{
-  STD_OK        = 0,
-  STD_OVERFLOW  = 1,
-  STD_UNDERFLOW = 2,
-  STD_EMPTY     = 3,
-  STD_UNKNOWN   = 4
-} strtodouble_error;
+extern void log_handler (const gchar *log_domain,
+                  GLogLevelFlags log_level,
+                  const gchar *message,
+                  gpointer user_data);
 
-strtodouble_error strtodouble (char *str, char *endptr, gdouble *result);
-
-gulong        ul_mul                    (gulong a, gulong b);
-gulong        ul_add                    (gulong a, gulong b);
-
-#endif /* UTILS_H */
+#endif /* LOG_H */

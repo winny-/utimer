@@ -3,21 +3,21 @@
  *
  *  Copyright 2008 Arnaud Soyez <weboide@codealpha.net>
  *
- *  This file is part of utimer.
- *  (utimer is a CLI program that features a timer, countdown, and a stopwatch)
+ *  This file is part of uTimer.
+ *  (uTimer is a CLI program that features a timer, countdown, and a stopwatch)
  *
- *  utimer is free software: you can redistribute it and/or modify
+ *  uTimer is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  utimer is distributed in the hope that it will be useful,
+ *  uTimer is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with utimer.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with uTimer.  If not, see <http://www.gnu.org/licenses/>.
  * 
  */
 
@@ -27,6 +27,9 @@
 #define TIMER_REFRESH_RATE  100
 
 #include "utils.h"
+
+GMutex *update_timer_mutex;
+
 
 typedef struct {
   glong     tv_sec;
@@ -40,11 +43,14 @@ typedef struct
   gulong        seconds;
   gulong        mseconds;
   GTimeValDiff  *last_diff;
-  void          (*callback)();
+  void          (*success_callback)();
+  void          (*error_callback)();
+  guint         update_timer_safe_source_id;
 } ut_timer;
 
-int           timer_update              (ut_timer *t);
-int           timer_sleep               (ut_timer *t);
+gboolean      timer_update              (ut_timer *t);
+gboolean      timer_update_safe         (ut_timer *t);
+gboolean      timer_sleep               (ut_timer *t);
 int           timer_start_thread        (ut_timer *t);
 gulong        timer_get_maximum_value   (TimeUnit unit);
 gchar*        timer_get_maximum_pattern ();

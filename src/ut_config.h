@@ -1,5 +1,5 @@
 /*
- *  utils.h
+ *  ut_config.h
  *
  *  Copyright 2008 Arnaud Soyez <weboide@codealpha.net>
  *
@@ -21,32 +21,24 @@
  * 
  */
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef UT_CONFIG_H
+#define UT_CONFIG_H
 
-typedef enum
+#include <glib.h>
+
+
+typedef struct
 {
-  TU_DAY    = 0,
-  TU_MONTH  = 1,
-  TU_YEAR   = 2,
-  TU_HOUR   = 3,
-  TU_MINUTE = 4,
-  TU_SECOND = 5,
-  TU_MILLISECOND = 6
-} TimeUnit;
+  gchar       *locale;
+  gchar       *isTimer;
+  gboolean    verbose;
+  gboolean    show_version;
+  gboolean    debug;
+  gboolean    show_limits;
+  gboolean    quit_with_success;
+  
+} utconfig;
 
-typedef enum
-{
-  STD_OK        = 0,
-  STD_OVERFLOW  = 1,
-  STD_UNDERFLOW = 2,
-  STD_EMPTY     = 3,
-  STD_UNKNOWN   = 4
-} strtodouble_error;
+utconfig ut_config;
 
-strtodouble_error strtodouble (char *str, char *endptr, gdouble *result);
-
-gulong        ul_mul                    (gulong a, gulong b);
-gulong        ul_add                    (gulong a, gulong b);
-
-#endif /* UTILS_H */
+#endif /* UT_CONFIG_H */

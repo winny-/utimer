@@ -1,5 +1,5 @@
 /*
- *  utils.h
+ *  log.c
  *
  *  Copyright 2008 Arnaud Soyez <weboide@codealpha.net>
  *
@@ -21,32 +21,47 @@
  * 
  */
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
 
-typedef enum
+#include <stdlib.h>
+#include <glib.h>
+#include <glib/gi18n-lib.h>
+
+#include "log.h"
+#include "ut_config.h"
+
+void log_handler (const gchar *log_domain,
+                        GLogLevelFlags log_level,
+                        const gchar *message,
+                        gpointer user_data)
 {
-  TU_DAY    = 0,
-  TU_MONTH  = 1,
-  TU_YEAR   = 2,
-  TU_HOUR   = 3,
-  TU_MINUTE = 4,
-  TU_SECOND = 5,
-  TU_MILLISECOND = 6
-} TimeUnit;
-
-typedef enum
-{
-  STD_OK        = 0,
-  STD_OVERFLOW  = 1,
-  STD_UNDERFLOW = 2,
-  STD_EMPTY     = 3,
-  STD_UNKNOWN   = 4
-} strtodouble_error;
-
-strtodouble_error strtodouble (char *str, char *endptr, gdouble *result);
-
-gulong        ul_mul                    (gulong a, gulong b);
-gulong        ul_add                    (gulong a, gulong b);
-
-#endif /* UTILS_H */
+  
+  if((log_level & G_LOG_LEVEL_MESSAGE))
+  {
+    g_print("%s\n", message);
+    return;
+  }
+  
+  if((log_level & G_LOG_LEVEL_INFO))
+  {
+    if(ut_config.verbose)
+      g_print("%s\n", message);
+    return;
+  }
+    
+  if((log_level & G_LOG_LEVEL_DEBUG))
+  {
+    if(ut_config.debug)
+      g_print("** DEBUG: %s\n", message);
+    return;
+  }
+    
+  if((log_level & G_LOG_LEVEL_WARNING))
+  {
+    g_print("** WARNING: %s\n", message);
+    return;
+  }
+  
+}
