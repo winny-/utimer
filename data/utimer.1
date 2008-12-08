@@ -1,0 +1,128 @@
+.TH "UTIMER" "1" "December 7, 2008" "" "uTimer"
+.SH "NAME"
+\fButimer\fP \- command\-line "timer" tool which features a timer, a countdown and a stopwatch.
+
+.SH "SYNOPSIS"
+.B utimer
+.RI [\-\-timer=TIMELENGTH\ |\ \-t\ TIMELENGTH]
+.RI [\-\-verbose]q
+.RI [\-\-quit\-with\-success]
+
+.B utimer
+.RI [\-\-limits]
+.SH "DESCRIPTION"
+.B utimer
+or 
+.B µTimer
+(pronounced "micro\-timer") is a multifunction timer (command\-line only). It features a timer, a countdown, and a stopwatch.
+
+The
+.B timer
+is like a countdown but the elapsed time is increasing to reach the given time length. Given a time length, the timer will "sleep" or wait till the time length has passed, then exits. Compared to the linux
+.B sleep
+function, µTimer actually shows the elapsed time which can be useful for long time lengths.
+
+The
+.B countdown
+, compared to the timer, has the only difference that the starting point is the given time length and it will decrease to reach 0. When it reaches 0 (when the time length has passed), the program exits. It can very useful for creating scripts that should run a function in a certain period of time only. (
+.B The countdown is not implemented yet!
+)
+
+The
+.B stopwatch
+is like a real stopwatch where you can measure time of multiple events, or use it for (board) games, or anything else. It starts counting time when the program is started, and it can be stopped or otherwise you can just hit the ENTER key when you have to take multiple measures without stopping the counting. (
+.B The stopwatch is not implemented yet!
+)
+
+.LP 
+.SH "OPTIONS"
+.B
+.IP --help | -?
+Print the command line options.
+.B
+.IP --timer=TIMELENGTH | -t TIMELENGTH
+Shows a timer that runs until TIMELENGTH has passed. TIMELENGTH is pattern that should look like: 2d15h39m58s120ms. See the 
+.B Timer
+section in
+.B USAGE
+to read more about how to use the timer.
+.B
+.IP --verbose
+Print more information during the program's process.
+.B
+.IP --debug
+Show debug information in output (should ONLY be used for bug reporting, for developers or for testing purposes).
+.B
+.IP --limits
+Display the limits of
+.B µTimer
+for your machine (maximum values, longest timer, ...). It may be not be perfectly accurate. Use this option only to have an idea of what it can do.
+.B
+.IP --quit-with-success
+When you quit the program using the 'q' key, it will exit with a success exit status code, instead of an error one normally.
+.SH "USAGE"
+.B
+Timer:
+
+When using the timer, µTimer will show you the current elapsed time and then will exit when TIMELENGTH is reached (read: when that TIMELENGTH has passed). It can be useful for scripts, or even for everyday (geek or not!) use.
+The TIMELENGTH is composed of pairs of a value and a suffix (for example "39d" for 39 days). It can be in any order, and there is no space between each pair. Each value 
+.B must be a positive integer
+and can be null (0). The suffix is case sensitive (see below for the suffixes list). 
+
+Here's a few valid examples of TIMELENGTH:
+55s,
+2m450ms,
+0s,
+0d32h,
+9m7h30s80ms6d,
+1d0h0m50s.
+
+Supported suffixes are:
+.B d
+for days,
+.B h
+for hours,
+.B m
+for minutes,
+.B s
+for seconds,
+.B ms
+for milliseconds.
+
+The timer can be accurate enough for most common uses. Don't expect it to have a 1-ms accuracy. It highly depends on your machine, you can expect an accuracy of 100 ms for sure.
+
+
+Also you can stop/quit the timer whenever by using the 'q' key, note that the program will exit with a error exit status code (1) (you can bypass this behaviour by using the
+.B --quit-with-success
+option).
+
+.B
+.IP Countdown:
+Not available in this version (0.1).
+.B
+.IP Stopwatch:
+Not available in this version (0.1).
+.SH EXIT STATUS
+After the timer or the countdown are done, the program exits with a success exit status code (0). You can change this behaviour using the 
+.B --quit-with-success
+option.
+.B µTimer
+can be easily used with other scripts using this option (e.g. to reboot in 10 minutes, and you can see the time elapsed since you launched the script).
+
+.SH EXAMPLE
+.B
+Timer:
+
+.IP
+.B \./utimer \-t 20s900ms
+runs the timer for 20 seconds and 900 milliseconds.
+.IP
+.B \./utimer \-t 1d
+runs the timer for a whole day.
+.SH "BUGS"
+If you find any bug, please report it at:
+.B https://bugs.launchpad.net/utimer
+or send it at
+.B bugs@utimer.codealpha.net
+.SH "AUTHOR"
+Arnaud Soyez (weboide@codealpha.net)

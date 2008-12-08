@@ -99,9 +99,8 @@ int main (int argc, char *argv[])
   g_option_context_set_summary (context, SUMMARY);
   
   tmp = g_strconcat (DESCRIPTION, 
-                     _("\nReport any bug to: https://bugs.launchpad.net/utimer or bugs@utimer.codealpha.net"),
-                     //~ PACKAGE_BUGREPORT, 
-                     //~ ".",
+                     _("\nReport any bug to: bugs@utimer.codealpha.net\
+or  https://bugs.launchpad.net/utimer"),
                      NULL);
   g_option_context_set_description (context, tmp);
   g_free (tmp);
@@ -182,8 +181,8 @@ int main (int argc, char *argv[])
     g_print(_("This is a list of the possible limits of µTimer for your machine.\n\n"));
     
     tmp = timer_get_maximum_time();
-    g_print(_("* Timer's Limits:\n"));
-    g_print(_("\t- The maximum possible sleep is: %s.\n"), tmp);
+    g_print(_("* Limits for the Timer:\n"));
+    g_print(_("\t- The maximum possible timer length is: %s.\n"), tmp);
     g_print(_("\t  If you enter a value that is exceeding it, it will be\
  replaced by the value above.\n"));
     
@@ -224,7 +223,7 @@ int main (int argc, char *argv[])
     g_debug("Timer Mode");
     
     tmp = timer_get_maximum_time();
-    g_debug(_("Do not use time length that exceeds %s."), tmp);
+    g_debug("Timer length maximum is %s.", tmp);
     g_free(tmp);
     tmp = NULL;
     
@@ -235,7 +234,7 @@ int main (int argc, char *argv[])
     timer_parse_pattern(ut_config.isTimer, &ttimer);
     
     tmp = timer_ut_timer_to_string(ttimer);
-    g_info("Timer will exit after reaching: %s", tmp);
+    g_info(_("Timer will exit after reaching: %s"), tmp);
     g_free(tmp);
     tmp = NULL;
     
@@ -248,9 +247,9 @@ int main (int argc, char *argv[])
   
   /* Starting the main loop */
   
-  g_debug (_("Starting main loop..."));
+  g_debug ("Starting main loop...");
   g_main_loop_run (loop);
-  g_debug (_("Quitted main loop..."));
+  g_debug ("Quitted main loop...");
   
   
   set_tty_canonical(0);
@@ -307,7 +306,7 @@ void set_tty_canonical (int state)
 void quitloop (int error_status)
 {
   g_print("\n");
-  g_debug (_("Stopping Main Loop (error code: %i)..."), error_status);
+  g_debug ("Stopping Main Loop (error code: %i)...", error_status);
   
   // We set the exit status code
   exit_status_code = error_status;

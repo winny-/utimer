@@ -1,4 +1,4 @@
-                                µTimer  0.1
+                                µTimer  @PACKAGE_VERSION@
                                 -----------
 
 
@@ -15,9 +15,9 @@ It provides:
 Version Information
 -------------------
 
-Version  :  0.1
-Codename :  sunrise
-Stability:  *UNSTABLE*
+Version  :  @PACKAGE_VERSION@
+Codename :  @UTIMER_CODENAME@
+Stability:  @UTIMER_STABILITY@
 
 IMPORTANT: Note that this is an unstable version that doesn't contain all the
            features that µTimer should be composed of.
@@ -54,7 +54,7 @@ Bugs Report
 If you wish to submit a bug report about µTimer, please use Launchpad:
   https://bugs.launchpad.net/utimer
 If you really can't use Launchpad, send an email with DETAILED instructions on
-the bug to: weboide@codealpha.net
+the bug to: @PACKAGE_BUGREPORT@
 
 Ideas / Contributing
 --------------------

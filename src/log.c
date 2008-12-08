@@ -60,7 +60,7 @@ void log_handler (const gchar *log_domain,
     
   if((log_level & G_LOG_LEVEL_WARNING))
   {
-    g_print("** WARNING: %s\n", message);
+    g_print(_("** WARNING: %s\n"), message);
     return;
   }
   

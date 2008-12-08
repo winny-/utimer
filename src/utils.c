@@ -62,14 +62,14 @@ strtodouble_error strtodouble (char *str, char *endptr, gdouble *result)
   // if str was empty (no digit found)
   if (endptr == str)
   {
-    g_warning("No digits were found\n");
+    g_warning(_("No digits were found\n"));
     return STD_EMPTY;
   }
   
   // If we have some chars left after the number found
   if (*endptr != '\0')
   {
-    g_warning("Remaining characters after number: %s\n", endptr);
+    g_warning(_("Remaining characters after number: %s\n"), endptr);
   }
   
   return STD_OK;

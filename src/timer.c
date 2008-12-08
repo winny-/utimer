@@ -58,7 +58,7 @@ gboolean timer_update (ut_timer *t)
   g_get_current_time(&current_time);
   delta = timer_get_diff(*(t->start_time), current_time, &check_overflow);
   tmpchar = timer_gtvaldiff_to_string(delta);
-  g_print("\rElapsed Time: %s", tmpchar);
+  g_print(_("\rElapsed Time: %s"), tmpchar);
   g_free(tmpchar);
   t->last_diff = &delta;
   g_mutex_unlock (update_timer_mutex);
@@ -95,9 +95,9 @@ static GTimeValDiff timer_get_diff (GTimeVal start, GTimeVal end, gboolean *must
   
   if(*must_be_positive && diff.negative)
   {
-    g_warning("\n***************** IMPORTANT *****************");
-    g_warning("Possible overflow! (is it Year 2038 bug?). The start time is after the current time!");
-    g_warning("IMPORTANT: The timer will continue normally but the time displayed (elapsed time) may be invalid.\n");
+    g_warning(_("\n***************** IMPORTANT *****************"));
+    g_warning(_("Possible overflow! (is it Year 2038 bug?). The start time is after the current time!"));
+    g_warning(_("IMPORTANT: The timer will continue normally but the time displayed (elapsed time) may be invalid.\n"));
     *must_be_positive = FALSE;
   }
   
@@ -157,7 +157,7 @@ gulong timer_get_maximum_value (TimeUnit unit)
   if(unit == TU_YEAR)
     return G_MAXUSHORT;
   
-  g_critical("%s doesn't support given unit (%d).", __FUNCTION__, unit);
+  g_critical(_("%s doesn't support given unit (%d)."), __FUNCTION__, unit);
 }
 
 gchar* timer_get_maximum_pattern ()
@@ -223,7 +223,7 @@ gboolean timer_parse_pattern (gchar *pattern, ut_timer* timer)
     }
     else
     {
-      g_error("Error when trying to parse: %s", endptr);
+      g_error(_("Error when trying to parse: %s"), endptr);
     }
     
     tmp = endptr;
@@ -295,7 +295,8 @@ gchar* timer_sec_msec_to_string(gulong sec, gulong msec)
   gint minutes = sec / 60;
   sec -= minutes * 60;
   
-  return g_strdup_printf("%i days %02i:%02i:%02lu.%03lu (%lu.%03lu seconds)",
+  return g_strdup_printf(C_("NUMDAYS days HOURS:MINUTES:SECONDS:MILLISECONDS (SECONDS.MILLISECONDS seconds)",
+                          "%i days %02i:%02i:%02lu.%03lu (%lu.%03lu seconds)"),
                          days,
                          hours,
                          minutes,

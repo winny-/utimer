@@ -26,10 +26,10 @@
 
 #include "ut_config.h"
 
-#define SHORTDESCRIPTION "command-line \"timer\" which features a timer,\
- a countdown and a stopwatch"
+#define SHORTDESCRIPTION _("command-line \"timer\" which features a timer,\
+ a countdown and a stopwatch")
 
-#define SUMMARY " µTimer (or \"utimer\", pronounced as \"micro-timer\") is a\
+#define SUMMARY _(" µTimer (or \"utimer\", pronounced as \"micro-timer\") is a\
  multifunction timer (command-line only).\n\n The main features are:\n\
 \t- a timer (e.g. count from 0 to 4 minutes),\n\
 \t- a countdown (e.g. count from 10 minutes to 0),\n\
@@ -37,7 +37,7 @@
 \n\n µTimer always exits after\
  the timer or countdown are done unless specified otherwise. This can be useful\
  for using countdowns in scripts, for example. The stopwatch, which is not\
- concerned, needs to be stopped manually using 'ctrl+c' or 'q'."
+ concerned, needs to be stopped manually using 'ctrl+c' or 'q'.")
 
 #define COPYRIGHT_TXT "License GPLv3+: GNU GPL version 3 or later\
  <http://gnu.org/licenses/gpl.html>\nThis is free software: you are free to\

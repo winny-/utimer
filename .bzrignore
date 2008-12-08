@@ -23,3 +23,6 @@ aclocal.m4
 ./debian
 ./src/utimer
 ./docs
+*.pot
+README
+utimer-*.tar.gz
