@@ -9,3 +9,7 @@
 && echo "=============== DONE ==================" \
 && echo -e "You can now type these commands: \n$ ./configure\n$ make\n$ make install\nAnd then uTimer should be installed!" \
 && echo "=============== EOF ==================="
+if [ ! -f ChangeLog ]; then
+  echo -e "Creating empty ChangeLog...\nIMPORTANT: ChangeLog is only generated for dist packages (.tar.gz) from the bzr log."
+  touch ChangeLog
+fi

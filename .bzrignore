@@ -27,3 +27,4 @@ aclocal.m4
 README
 utimer-*.tar.gz
 ./po/*.gmo
+ChangeLog
