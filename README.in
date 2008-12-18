@@ -34,6 +34,13 @@ To download other releases of µTimer, use one of these download locations:
   https://launchpad.net/utimer/+download
   http://utimer.codealpha.net/files/
 
+Requirements
+------------
+
+You need to install the following:
+    glib
+    intltool (>= 0.40.5)
+
 Installation
 ------------
 
