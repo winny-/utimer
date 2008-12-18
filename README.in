@@ -8,9 +8,9 @@ Description
 µTimer (or commonly written "utimer", but pronounced "micro-timer") is a
 multifunction timer (command-line only).
 It provides:
- - a timer (e.g. count from 0 to 4 minutes),
- - a countdown (NOT AVAILABLE in 0.1) (e.g. count from 10 minutes to 0),
- - a stopwatch (NOT AVAILABLE in 0.1).
+ - a timer (e.g. count from 0 to 4 minutes and 20 seconds),
+ - a countdown (NOT AVAILABLE in versions 0.1.x) (e.g. count from 10 min. to 0),
+ - a stopwatch (NOT AVAILABLE in versions 0.1.x).
 
 Version Information
 -------------------

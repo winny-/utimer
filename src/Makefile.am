@@ -1,4 +1,4 @@
-AM_CPPFLAGS = $(GLIB_CFLAGS) -DLOCALEDIR=\""$(LOCALEDIR)"\"
+AM_CPPFLAGS = $(GLIB_CFLAGS)
 
 bin_PROGRAMS = utimer
 utimer_SOURCES = utimer.c utimer.h \
