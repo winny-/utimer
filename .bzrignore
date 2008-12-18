@@ -26,3 +26,4 @@ aclocal.m4
 *.pot
 README
 utimer-*.tar.gz
+./po/*.gmo

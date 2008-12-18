@@ -7,17 +7,26 @@ PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.18.2])
 PKG_CHECK_MODULES([GIO], [gio-unix-2.0])
 AC_CHECK_LIB(gthread-2.0, g_thread_init)
 #PKG_CHECK_MODULES([GOBJECT], [ glib-2.0 gobject-2.0 ])
+
+
+
+# -- i18n --
+
 AC_PROG_INTLTOOL([0.40.5])
-
-
 GETTEXT_PACKAGE=utimer
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [Gettext package.])
+if test "x${prefix}" = "xNONE"; then
+  AC_DEFINE_UNQUOTED(LOCALEDIR, "${ac_default_prefix}/${DATADIRNAME}/locale", [Locale dir])
+else
+  AC_DEFINE_UNQUOTED(LOCALEDIR, "${prefix}/${DATADIRNAME}/locale", [Locale dir])
+fi
 
 AM_GLIB_GNU_GETTEXT
 
-UTIMERLOCALEDIR='${prefix}/${DATADIRNAME}/locale'
-AC_SUBST(UTIMERLOCALEDIR)
+
+# -- -- --
+
 
 UTIMER_CODENAME='sunrise'
 AC_SUBST(UTIMER_CODENAME)
