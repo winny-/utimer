@@ -1,5 +1,5 @@
 /*
- *  ut_config.h
+ *  countdown.h
  *
  *  Copyright 2008 Arnaud Soyez <weboide@codealpha.net>
  *
@@ -21,25 +21,9 @@
  * 
  */
 
-#ifndef UT_CONFIG_H
-#define UT_CONFIG_H
-
-#include <glib.h>
+#ifndef COUNTDOWN_H
+#define COUNTDOWN_H
 
 
-typedef struct
-{
-  gchar       *locale;
-  gchar       *isTimer;
-  gchar       *isCountdown;
-  gboolean    verbose;
-  gboolean    show_version;
-  gboolean    debug;
-  gboolean    show_limits;
-  gboolean    quit_with_success;
-  
-} utconfig;
 
-utconfig ut_config;
-
-#endif /* UT_CONFIG_H */
+#endif /* COUNTDOWN_H */

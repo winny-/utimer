@@ -37,6 +37,7 @@
 #include "utils.h"
 #include "utimer.h"
 #include "timer.h"
+#include "countdown.h"
 #include "log.h"
 
 /**
@@ -117,7 +118,8 @@ or  https://bugs.launchpad.net/utimer"),
   /* Verify that there is at least an option */
   if (!( ut_config.isTimer
       || ut_config.show_version
-      || ut_config.show_limits))
+      || ut_config.show_limits
+      || ut_config.isCountdown))
   {
     g_printerr (_("No option specified!\n\nUse \"-t TIMELENGTH\" if you wish to\
  use the the timer.\nTo see the usage help, type: utimer --help\n\n"));
@@ -213,7 +215,7 @@ or  https://bugs.launchpad.net/utimer"),
   
   g_idle_add((GSourceFunc) start_thread_exit_check, NULL);
   
-  /* If timer mode selected */
+  /* -------------- TIMER MODE -------------- */
   if(ut_config.isTimer)
   {
     timer_init(&ttimer);
@@ -244,6 +246,17 @@ or  https://bugs.launchpad.net/utimer"),
     g_idle_add((GSourceFunc) timer_start_thread, &ttimer);
     
   }
+  /* -------------- END TIMER MODE -------------- */
+  
+  /* -------------- COUNTDOWN MODE -------------- */
+  if(ut_config.isCountdown)
+  {
+    g_debug("Countdown Mode");
+    g_warning("*Not implemented yet*");
+    
+    g_idle_add((GSourceFunc) success_quitloop, NULL);
+  }
+  /* -------------- END COUNTDOWN MODE -------------- */
   
   /* Starting the main loop */
   

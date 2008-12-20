@@ -94,6 +94,16 @@ static GOptionEntry entries[] = {
     N_("TIMELENGTH")
   },
   
+  {"countdown",
+    'c',
+    0,
+    G_OPTION_ARG_STRING,
+    &(ut_config.isCountdown),
+    N_("Countdown mode: the program will count from TIMELENGTH to 0 and\
+ then will exit (e.g. utimer -c 30d20h18m50s250ms)."),
+    N_("TIMELENGTH")
+  },
+  
   {"limits",
     '\0',
     0,

@@ -39,8 +39,6 @@ gboolean timer_update_safe (ut_timer *t)
   GTimeValDiff delta;
   static gboolean check_overflow = TRUE;
   
-  /* Test to see if stopped running or if the next call will be too late. */
-
   timer_update(t);
   
   return TRUE;
