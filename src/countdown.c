@@ -21,3 +21,13 @@
  * 
  */
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#include <stdlib.h>
+#include <errno.h>
+#include <glib.h>
+#include <glib/gi18n-lib.h>
+
+#include "countdown.h"

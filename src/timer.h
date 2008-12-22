@@ -32,29 +32,25 @@ GMutex *update_timer_mutex;
 
 
 typedef struct {
-  glong     tv_sec;
-  glong     tv_usec;
-  gboolean  negative;
+  gulong     tv_sec;
+  gulong     tv_usec;
+  gboolean   negative;
 } GTimeValDiff;
 
 typedef struct
 {
-  GTimeVal      *start_time;
+  GTimer        *start_timer;
   gulong        seconds;
   gulong        mseconds;
-  GTimeValDiff  *last_diff;
   void          (*success_callback)();
   void          (*error_callback)();
   guint         update_timer_safe_source_id;
 } ut_timer;
 
 gboolean      timer_update              (ut_timer *t);
-gboolean      timer_update_safe         (ut_timer *t);
 gboolean      timer_sleep               (ut_timer *t);
 int           timer_start_thread        (ut_timer *t);
-gulong        timer_get_maximum_value   (TimeUnit unit);
-gchar*        timer_get_maximum_pattern ();
-gboolean      timer_parse_pattern       (gchar *pattern, ut_timer* timer);
+gboolean      parse_time_pattern       (gchar *pattern, ut_timer* timer);
 void          timer_add_seconds         (ut_timer* timer, gulong seconds);
 void          timer_add_milliseconds    (ut_timer* timer, gulong milliseconds);
 GTimeVal      gtvaldiff_to_gtval        (GTimeValDiff g);
@@ -67,6 +63,5 @@ static
 gboolean      timer_apply_suffix        (gulong* value, gchar* suffix);
 
 static
-GTimeValDiff  timer_get_diff            (GTimeVal start, GTimeVal end,
-                                         gboolean *must_be_positive);
+GTimeValDiff  timer_get_diff            (GTimer *start);
 #endif /* TIMER_H */

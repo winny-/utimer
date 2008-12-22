@@ -65,8 +65,7 @@ int main (int argc, char *argv[])
   set_tty_canonical(1);
   
   // Get the current time
-  GTimeVal start_time;
-  g_get_current_time(&start_time);
+  GTimer *start_timer =  g_timer_new();
    
   /* Set the function to call in case of receiving signals:
    * we need to stop the main loop to exit gracefully, but
@@ -172,7 +171,7 @@ or  https://bugs.launchpad.net/utimer"),
   //~ {
     //~ g_message(_("No argument found."));
   //~ }
-   
+  
   /* Now that we treated every arg, we can free remaining_args. */
   g_strfreev(remaining_args);
   
@@ -187,12 +186,6 @@ or  https://bugs.launchpad.net/utimer"),
     g_print(_("\t- The maximum possible timer length is: %s.\n"), tmp);
     g_print(_("\t  If you enter a value that is exceeding it, it will be\
  replaced by the value above.\n"));
-    
-    /* Just in case! */
-    if(sizeof(gulong)==4)
-    {
-      g_print(_("\t- This program is not Year-2038-bug safe (on a 32 bits machine)!\n"));
-    }
     
     g_free(tmp);
     tmp = NULL;
@@ -231,9 +224,9 @@ or  https://bugs.launchpad.net/utimer"),
     
     ttimer.success_callback = success_quitloop;
     ttimer.error_callback   = error_quitloop;
-    ttimer.start_time = &start_time;
+    ttimer.start_timer = start_timer;
     
-    timer_parse_pattern(ut_config.isTimer, &ttimer);
+    parse_time_pattern(ut_config.isTimer, &ttimer);
     
     tmp = timer_ut_timer_to_string(ttimer);
     g_info(_("Timer will exit after reaching: %s"), tmp);
@@ -241,7 +234,7 @@ or  https://bugs.launchpad.net/utimer"),
     tmp = NULL;
     
     ttimer.update_timer_safe_source_id = g_timeout_add(TIMER_REFRESH_RATE,
-                                        (GSourceFunc) timer_update_safe,
+                                        (GSourceFunc) timer_update,
                                         &ttimer);
     g_idle_add((GSourceFunc) timer_start_thread, &ttimer);
     
@@ -264,7 +257,7 @@ or  https://bugs.launchpad.net/utimer"),
   g_main_loop_run (loop);
   g_debug ("Quitted main loop...");
   
-  
+  g_timer_destroy(start_timer);
   set_tty_canonical(0);
   g_debug("Quitting with error code: %i", exit_status_code);
   return exit_status_code;

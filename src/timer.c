@@ -33,47 +33,54 @@
 
 #include "timer.h"
 
-gboolean timer_update_safe (ut_timer *t)
-{
-  GTimeVal current_time;
-  GTimeValDiff delta;
-  static gboolean check_overflow = TRUE;
-  
-  timer_update(t);
-  
-  return TRUE;
-}
-
 gboolean timer_update (ut_timer *t)
 {
-  GTimeVal current_time;
   GTimeValDiff delta;
-  static gboolean check_overflow = TRUE;
   gchar* tmpchar;
   
-  g_mutex_lock (update_timer_mutex);
+  //~ g_mutex_lock (update_timer_mutex);
   
-  g_get_current_time(&current_time);
-  delta = timer_get_diff(*(t->start_time), current_time, &check_overflow);
+  delta = timer_get_diff(t->start_timer);
   tmpchar = timer_gtvaldiff_to_string(delta);
   g_print(_("\rElapsed Time: %s"), tmpchar);
   g_free(tmpchar);
-  t->last_diff = &delta;
-  g_mutex_unlock (update_timer_mutex);
+  
+  //~ g_mutex_unlock (update_timer_mutex);
   
   return TRUE;
 }
 
 gboolean timer_sleep (ut_timer *t)
 {
-  g_debug("sleeping for %lu.%03lu seconds", t->seconds, t->mseconds);
+  GTimeValDiff delta;
+  gulong usec = t->mseconds*1000;
+  delta = timer_get_diff(t->start_timer);
+  t->seconds -= delta.tv_sec;
+  
+  /* If there are more than one second, and usec < tv_usec */
+  if(t->seconds != 0 && usec < delta.tv_usec)
+  {
+    t->seconds--;
+    usec = 1000000-(delta.tv_usec-usec);
+  }
+  else if(usec >= delta.tv_usec) /* usec >= tv_usec, normal substraction */
+  {
+    usec -= delta.tv_usec;
+  }
+  else /* if 0 seconds and usec < tv_usec, we are already late! */
+  {
+    usec = 0;
+  }
+  
+  g_debug("sleeping for %lu.%06lu seconds", t->seconds, usec);
   g_print("\n");
   timer_update(t);
   
+  /* Main Sleep */
   if(t->seconds>0)
     sleep(t->seconds);
-  if(t->mseconds>0)
-    g_usleep(t->mseconds*1000);
+  if(usec>0)
+    g_usleep(usec);
   
   /* The Timer is done, so it should stop running. */
   g_source_remove(t->update_timer_safe_source_id);
@@ -82,43 +89,14 @@ gboolean timer_sleep (ut_timer *t)
   return TRUE;
 }
 
-static GTimeValDiff timer_get_diff (GTimeVal start, GTimeVal end, gboolean *must_be_positive)
+static GTimeValDiff timer_get_diff (GTimer *start)
 {
   GTimeValDiff diff;
-  GTimeVal *ptr_start, *ptr_end;
+  double sec;
   
-  diff.negative = !(end.tv_sec > start.tv_sec
-                    || end.tv_sec == start.tv_sec
-                       && end.tv_usec >= start.tv_usec);
+  diff.tv_sec = g_timer_elapsed(start, &diff.tv_usec);
   
-  if(*must_be_positive && diff.negative)
-  {
-    g_warning(_("\n***************** IMPORTANT *****************"));
-    g_warning(_("Possible overflow! (is it Year 2038 bug?). The start time is after the current time!"));
-    g_warning(_("IMPORTANT: The timer will continue normally but the time displayed (elapsed time) may be invalid.\n"));
-    *must_be_positive = FALSE;
-  }
-  
-  if(diff.negative)
-  {
-    ptr_start = &end;
-    ptr_end = &start;
-  }
-  else
-  {
-    ptr_start = &start;
-    ptr_end = &end;
-  }
-  
-  diff.tv_sec = ptr_end->tv_sec - ptr_start->tv_sec;
-  diff.tv_usec = ptr_end->tv_usec - ptr_start->tv_usec;
-  
-  if(diff.tv_usec < 0)
-  {
-    diff.tv_usec += G_USEC_PER_SEC;
-    diff.tv_sec--;
-  }
-  
+  g_debug("timer_get_diff: %lu.%06lu", diff.tv_sec, diff.tv_usec);
   return diff;
 }
 
@@ -135,39 +113,6 @@ int timer_start_thread (ut_timer *t)
   return FALSE; // to get removed from the main loop
 }
 
-gulong timer_get_maximum_value (TimeUnit unit)
-{
-  if(unit == TU_MILLISECOND)
-    return G_MAXULONG/1000;
-  
-  if(unit == TU_SECOND)
-    return G_MAXULONG;
-  
-  if(unit == TU_MINUTE)
-    return G_MAXUSHORT;
-  
-  if(unit == TU_HOUR)
-    return G_MAXUSHORT;
-  
-  if(unit == TU_DAY)
-    return G_MAXUSHORT;
-  
-  if(unit == TU_YEAR)
-    return G_MAXUSHORT;
-  
-  g_critical(_("%s doesn't support given unit (%d)."), __FUNCTION__, unit);
-}
-
-gchar* timer_get_maximum_pattern ()
-{
-  return g_strdup_printf("%lud%luh%lum%lus%lums",
-                         timer_get_maximum_value(TU_DAY),
-                         timer_get_maximum_value(TU_HOUR),
-                         timer_get_maximum_value(TU_MINUTE),
-                         timer_get_maximum_value(TU_SECOND),
-                         timer_get_maximum_value(TU_MILLISECOND));
-}
-
 gchar* timer_get_maximum_time()
 {
   ut_timer t;
@@ -177,7 +122,7 @@ gchar* timer_get_maximum_time()
   return timer_ut_timer_to_string(t);
 }
 
-gboolean timer_parse_pattern (gchar *pattern, ut_timer* timer)
+gboolean parse_time_pattern (gchar *pattern, ut_timer* timer)
 {
   int base = 10;
   gchar *endptr, *tmp;
@@ -251,7 +196,6 @@ void timer_add_milliseconds(ut_timer* timer, gulong milliseconds)
   
   timer->mseconds = ul_add(timer->mseconds, milliseconds);
 }
-
 
 static gboolean timer_apply_suffix (gulong* value, gchar* suffix)
 {
