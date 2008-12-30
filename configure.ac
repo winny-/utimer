@@ -1,4 +1,4 @@
-AC_INIT([utimer], [0.1.1], [bugs@utimer.codealpha.net])
+AC_INIT([utimer], [0.2], [bugs@utimer.codealpha.net])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h])
@@ -28,7 +28,7 @@ AM_GLIB_GNU_GETTEXT
 # -- -- --
 
 
-UTIMER_CODENAME='sunrise'
+UTIMER_CODENAME='hourglass'
 AC_SUBST(UTIMER_CODENAME)
 
 UTIMER_STABILITY='*UNSTABLE*'

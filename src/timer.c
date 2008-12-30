@@ -38,14 +38,19 @@ gboolean timer_update (ut_timer *t)
   GTimeValDiff delta;
   gchar* tmpchar;
   
-  //~ g_mutex_lock (update_timer_mutex);
+  if(t->isCountdown)
+    delta = countdown_get_diff(t);
+  else
+    delta = timer_get_diff(t->start_timer);
   
-  delta = timer_get_diff(t->start_timer);
   tmpchar = timer_gtvaldiff_to_string(delta);
-  g_print(_("\rElapsed Time: %s"), tmpchar);
-  g_free(tmpchar);
   
-  //~ g_mutex_unlock (update_timer_mutex);
+  if(t->isCountdown)
+    g_message(_("\rTime Remaining: %s "), tmpchar); /* trailing space needed! */
+  else
+    g_message(_("\rElapsed Time: %s "), tmpchar);
+  
+  g_free(tmpchar);
   
   return TRUE;
 }
@@ -53,14 +58,20 @@ gboolean timer_update (ut_timer *t)
 gboolean timer_sleep (ut_timer *t)
 {
   GTimeValDiff delta;
-  gulong usec = t->mseconds*1000;
+  guint usec = t->mseconds*1000;
+  guint sec  = t->seconds;
+  
+  /* Get the time that's already elapsed, and substracts it to how long we need
+   * to sleep.
+   */
+  
   delta = timer_get_diff(t->start_timer);
-  t->seconds -= delta.tv_sec;
+  sec -= delta.tv_sec;
   
   /* If there are more than one second, and usec < tv_usec */
-  if(t->seconds != 0 && usec < delta.tv_usec)
+  if(sec > 0 && usec < delta.tv_usec)
   {
-    t->seconds--;
+    sec--;
     usec = 1000000-(delta.tv_usec-usec);
   }
   else if(usec >= delta.tv_usec) /* usec >= tv_usec, normal substraction */
@@ -72,17 +83,19 @@ gboolean timer_sleep (ut_timer *t)
     usec = 0;
   }
   
-  g_debug("sleeping for %lu.%06lu seconds", t->seconds, usec);
-  g_print("\n");
+  g_debug("sleeping for %u.%06u seconds", sec, usec);
+  g_message("\n");
   timer_update(t);
   
   /* Main Sleep */
-  if(t->seconds>0)
-    sleep(t->seconds);
+  
+  if(sec>0)
+    sleep(sec);
+  
   if(usec>0)
     g_usleep(usec);
   
-  /* The Timer is done, so it should stop running. */
+  /* Sleeping is done, request to stop updating, and returns */
   g_source_remove(t->update_timer_safe_source_id);
   timer_update(t);
   t->success_callback();
@@ -92,11 +105,12 @@ gboolean timer_sleep (ut_timer *t)
 static GTimeValDiff timer_get_diff (GTimer *start)
 {
   GTimeValDiff diff;
-  double sec;
+  gulong tmpul;
   
-  diff.tv_sec = g_timer_elapsed(start, &diff.tv_usec);
+  diff.tv_sec = g_timer_elapsed(start, &tmpul);
+  diff.tv_usec = (guint) tmpul;
   
-  g_debug("timer_get_diff: %lu.%06lu", diff.tv_sec, diff.tv_usec);
+  g_debug("timer_get_diff: %u.%06u", diff.tv_sec, diff.tv_usec);
   return diff;
 }
 
@@ -110,13 +124,13 @@ int timer_start_thread (ut_timer *t)
     g_error (_("Thread failed: %s"), error->message);
   }
   
-  return FALSE; // to get removed from the main loop
+  return FALSE; // return FALSE to get removed from the main loop
 }
 
 gchar* timer_get_maximum_time()
 {
   ut_timer t;
-  t.seconds = G_MAXULONG;
+  t.seconds = G_MAXUINT;
   t.mseconds = 999;
   
   return timer_ut_timer_to_string(t);
@@ -124,9 +138,8 @@ gchar* timer_get_maximum_time()
 
 gboolean parse_time_pattern (gchar *pattern, ut_timer* timer)
 {
-  int base = 10;
   gchar *endptr, *tmp;
-  gulong val;
+  guint val;
   
   if(!pattern)
     return FALSE;
@@ -139,18 +152,18 @@ gboolean parse_time_pattern (gchar *pattern, ut_timer* timer)
     
     errno = 0;    /* To distinguish success/failure after call */
     
-    val = strtoul(tmp, &endptr, base);
-    g_debug("strtoul() returned %lu", val);
+    val = (guint) strtoul(tmp, &endptr, 10);
+    g_debug("strtoul() returned %u", val);
     
     
     /* Check for various possible errors */
     
-    if (errno == ERANGE && val == G_MAXULONG)
+    if (errno == ERANGE && val == G_MAXUINT)
     {
       if(*endptr == '\0')
-        g_warning(_("The last number is too big. It has been changed into: %lu"), val);
+        g_warning(_("The last number is too big. It has been changed into: %u"), val);
       else
-        g_warning(_("The number before '%s' is too big. It has been changed into: %lu"), endptr, val);
+        g_warning(_("The number before '%s' is too big. It has been changed into: %u"), endptr, val);
     }
     
     if(endptr && g_str_has_prefix(endptr, "ms")) // if parsing the milliseconds
@@ -175,17 +188,17 @@ gboolean parse_time_pattern (gchar *pattern, ut_timer* timer)
 
 }
 
-void timer_add_seconds(ut_timer* timer, gulong seconds)
+void timer_add_seconds(ut_timer* timer, guint seconds)
 {
-  g_debug("Adding %lu seconds", seconds);
-  timer->seconds = ul_add(timer->seconds, seconds);
-  g_debug("timer.seconds = %lu", timer->seconds);
+  g_debug("Adding %u seconds", seconds);
+  timer->seconds = ui_add(timer->seconds, seconds);
+  g_debug("timer.seconds = %u", timer->seconds);
 }
 
-void timer_add_milliseconds(ut_timer* timer, gulong milliseconds)
+void timer_add_milliseconds(ut_timer* timer, guint milliseconds)
 {
-  gulong bonus_seconds;
-  gulong diff;
+  guint bonus_seconds;
+  guint diff;
   
   bonus_seconds = milliseconds / 1000;
   if(bonus_seconds>0)
@@ -194,15 +207,15 @@ void timer_add_milliseconds(ut_timer* timer, gulong milliseconds)
     milliseconds -= bonus_seconds * 1000;
   }
   
-  timer->mseconds = ul_add(timer->mseconds, milliseconds);
+  timer->mseconds = ui_add(timer->mseconds, milliseconds);
 }
 
-static gboolean timer_apply_suffix (gulong* value, gchar* suffix)
+static gboolean timer_apply_suffix (guint* value, gchar* suffix)
 {
   int factor;
 
   switch (*suffix)
-    {
+  {
     case 0:
     case 's':
       factor = 1;
@@ -218,27 +231,30 @@ static gboolean timer_apply_suffix (gulong* value, gchar* suffix)
       break;
     default:
       return FALSE;
-    }
+  }
   
-  g_debug("applying factor %d to %lu", factor, *value);
+  g_debug("applying factor %d to %u", factor, *value);
   (*value) = ul_mul(*value, factor);
 
   return TRUE;
 }
 
-gchar* timer_sec_msec_to_string(gulong sec, gulong msec)
+/**
+ * Return human readable string for the given time.
+ */
+gchar* timer_sec_msec_to_string(guint sec, guint msec)
 {
   g_assert(msec < 1000);
-  gulong all_secs = sec;
-  gint days = sec / 86400;
+  guint all_secs = sec;
+  guint days = sec / 86400;
   sec -= days * 86400;
-  gint hours = sec / 3600;
+  guint hours = sec / 3600;
   sec -= hours * 3600;
-  gint minutes = sec / 60;
+  guint minutes = sec / 60;
   sec -= minutes * 60;
   
   return g_strdup_printf(C_("NUMDAYS days HOURS:MINUTES:SECONDS:MILLISECONDS (SECONDS.MILLISECONDS seconds)",
-                          "%i days %02i:%02i:%02lu.%03lu (%lu.%03lu seconds)"),
+                          "%u days %02u:%02u:%02u.%03u (%u.%03u seconds)"),
                          days,
                          hours,
                          minutes,
@@ -262,4 +278,44 @@ void timer_init(ut_timer* t)
 {
   t->seconds = 0;
   t->mseconds = 0;
+  t->isCountdown = FALSE;
+}
+
+void countdown_init (ut_timer* t)
+{
+  t->seconds = 0;
+  t->mseconds = 0;
+  t->isCountdown = TRUE;
+}
+
+static GTimeValDiff countdown_get_diff (ut_timer *t)
+{
+  GTimeValDiff diff;
+  gulong tmpul;
+  
+  /* diff = elapsed time */
+  diff.tv_sec = g_timer_elapsed(t->start_timer, &tmpul);
+  diff.tv_usec = tmpul;
+  
+  /* ------- We need: diff = given time - elapsed time ------- */
+  
+  diff.tv_sec = t->seconds - diff.tv_sec;
+  
+  /* If there are more than one second, and usec < tv_usec */
+  if(diff.tv_sec > 0 && t->mseconds*1000 < diff.tv_usec)
+  {
+    diff.tv_sec--;
+    diff.tv_usec = 1000000-(diff.tv_usec - t->mseconds*1000);
+  }
+  else if(t->mseconds*1000 >= diff.tv_usec) /* usec >= tv_usec, normal substraction */
+  {
+    diff.tv_usec = t->mseconds*1000 - diff.tv_usec;
+  }
+  else /* if 0 seconds and usec < tv_usec, we are already late! */
+  {
+    diff.tv_usec = 0;
+  }
+  
+  g_debug("countdown_get_diff: %u.%06u", diff.tv_sec, diff.tv_usec);
+  return diff;
 }

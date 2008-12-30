@@ -32,36 +32,85 @@
 #define SUMMARY _(" µTimer (or \"utimer\", pronounced as \"micro-timer\") is a\
  multifunction timer (command-line only).\n\n The main features are:\n\
 \t- a timer (e.g. count from 0 to 4 minutes),\n\
-\t- a countdown (e.g. count from 10 minutes to 0),\n\
+\t- a countdown (e.g. count from 10 minutes down to 0),\n\
 \t- a stopwatch.\
 \n\n µTimer always exits after\
- the timer or countdown are done unless specified otherwise. This can be useful\
+ the timer or countdown are done counting. This can be useful\
  for using countdowns in scripts, for example. The stopwatch, which is not\
- concerned, needs to be stopped manually using 'ctrl+c' or 'q'.")
+ concerned, needs to be stopped manually using 'q'.")
 
 #define COPYRIGHT_TXT "License GPLv3+: GNU GPL version 3 or later\
  <http://gnu.org/licenses/gpl.html>\nThis is free software: you are free to\
  change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by\
  law."
 
-#define COPYRIGHT "Copyright 2008 Arnaud Soyez <weboide@codealpha.net>"
+#define COPYRIGHT "Copyright 2008  Arnaud Soyez <weboide@codealpha.net>"
 
 
 #define DESCRIPTION ""
 
 static    GMainLoop       *loop;
 
-static    char            **remaining_args;
+//~ static    char            **remaining_args;
 struct    termios         savedttystate;
 static    int             exit_status_code;
 
 static GOptionEntry entries[] = {
+  
+  {"timer",
+    't',
+    0,
+    G_OPTION_ARG_STRING,
+    &(ut_config.isTimer),
+    N_("count from 0 to TIMELENGTH and then exit\
+ (e.g. utimer -t 31m27s300ms)."),
+    N_("TIMELENGTH")
+  },
+  
+  {"countdown",
+    'c',
+    0,
+    G_OPTION_ARG_STRING,
+    &(ut_config.isCountdown),
+    N_("count from TIMELENGTH down to 0 and exit (e.g.\
+ utimer -c 30d9h50s)."),
+    N_("TIMELENGTH")
+  },
+  
   {"verbose",
     'v',
     0,
     G_OPTION_ARG_NONE,
     &(ut_config.verbose),
-    N_("Verbose output"),
+    N_("Verbose output."),
+    NULL
+  },
+  
+  {"quiet",
+    'q',
+    0,
+    G_OPTION_ARG_NONE,
+    &(ut_config.quiet),
+    N_("Quiet output."),
+    NULL
+  },
+  
+  {"quit-with-success",
+    '\0',
+    0,
+    G_OPTION_ARG_NONE,
+    &(ut_config.quit_with_success), 
+    N_("When hitting 'q' to end the program, exit with a SUCCESS exit\
+ status (0)."),
+    NULL
+  },
+
+  {"limits",
+    'L',
+    0,
+    G_OPTION_ARG_NONE,
+    &(ut_config.show_limits),
+    N_("Show the limits of µTimer (Maximum time length, Accuracy...)"),
     NULL
   },
   
@@ -74,58 +123,17 @@ static GOptionEntry entries[] = {
     NULL
   },
   
-  
   {"debug",
-    '\0',
+    'd',
     0,
     G_OPTION_ARG_NONE,
     &(ut_config.debug),
-    N_("Debug output (use only for debugging purposes or for bug reports)"),
+    N_("Debug output."),
     NULL
   },
-  
-  {"timer",
-    't',
-    0,
-    G_OPTION_ARG_STRING,
-    &(ut_config.isTimer),
-    N_("Timer mode: the program will exit after a certain TIMELENGTH\
- (e.g. utimer -t 5d18h31m27s300ms)."),
-    N_("TIMELENGTH")
-  },
-  
-  {"countdown",
-    'c',
-    0,
-    G_OPTION_ARG_STRING,
-    &(ut_config.isCountdown),
-    N_("Countdown mode: the program will count from TIMELENGTH to 0 and\
- then will exit (e.g. utimer -c 30d20h18m50s250ms)."),
-    N_("TIMELENGTH")
-  },
-  
-  {"limits",
-    '\0',
-    0,
-    G_OPTION_ARG_NONE,
-    &(ut_config.show_limits),
-    N_("Show the limits of µTimer (Maximum time length, Year 2038 bug, etc...)"),
-    NULL
-  },
-  
-  {"quit-with-success",
-    '\0',
-    0,
-    G_OPTION_ARG_NONE,
-    &(ut_config.quit_with_success), 
-    N_("When (and only when) the user hits the 'q' key to end the program,\
- the program will exit with a SUCCESS (0) exit status instead of a\
- non-zero/error (1) exit status (this might be useful for developers)."),
-    NULL
-  },
-  
-  {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args,
-    NULL, NULL },
+
+  //~ {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args,
+    //~ NULL, NULL },
   {NULL}
 };
 

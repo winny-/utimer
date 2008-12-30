@@ -32,49 +32,6 @@
 
 #include "utils.h"
 
-strtodouble_error strtodouble (char *str, char *endptr, gdouble *result)
-{
-  gint errnum = 0;
-  gdouble val;
-  errno = 0;
-  val = g_ascii_strtod(str, &endptr);
-  g_debug("strtod returned %f", val);
-  
-  // copy errno into errnum just to make sure it doesn't change
-  errnum = errno;
-  
-  result = &val;
-  
-  g_debug("result = %f", *result);
-  
-  // Check for overflow
-  if (errnum == ERANGE && (val == DBL_MAX || val == DBL_MIN))
-  {
-    g_debug("Overflow!");
-    return STD_OVERFLOW;
-  }
-  else if(errnum != 0 && val == 0) // Underflow
-  {
-    g_debug("Underflow!");
-    return STD_UNDERFLOW;
-  }
-
-  // if str was empty (no digit found)
-  if (endptr == str)
-  {
-    g_warning(_("No digits were found\n"));
-    return STD_EMPTY;
-  }
-  
-  // If we have some chars left after the number found
-  if (*endptr != '\0')
-  {
-    g_warning(_("Remaining characters after number: %s\n"), endptr);
-  }
-  
-  return STD_OK;
-}
-
 gulong ul_add(gulong a, gulong b)
 {
   if(a > G_MAXULONG - b)
@@ -99,3 +56,27 @@ gulong ul_mul(gulong a, gulong b) // only positive multiplication
     return a * b;
 }
 
+
+guint ui_add(guint a, guint b)
+{
+  if(a > G_MAXUINT - b)
+  {
+    g_debug("Overflowing addition...");
+    return G_MAXUINT;
+  }
+  else
+    return a + b;
+}
+
+guint ui_mul(guint a, guint b) // only positive multiplication
+{
+  g_assert(a >= 0 && b >= 0);
+  
+  if(a > G_MAXUINT / b)
+  {
+    g_debug("Overflowing multiplication...");
+    return G_MAXUINT;
+  }
+  else
+    return a * b;
+}

@@ -37,14 +37,13 @@
 #include "utils.h"
 #include "utimer.h"
 #include "timer.h"
-#include "countdown.h"
 #include "log.h"
 
 /**
  * Function main()
  */
 int main (int argc, char *argv[])
-{
+{        /* ================== MAIN STARTS ==================== */
   GError          *error = NULL;
   GOptionContext  *context;
   gchar           *tmp = NULL;
@@ -52,46 +51,52 @@ int main (int argc, char *argv[])
   ut_timer        ttimer;
   gchar           *options_help;
 
-  /* Initialization */
-  exit_status_code = EXIT_SUCCESS;
-  g_thread_init(NULL);
-  g_type_init();
+               /* -------------- Initialization ------------- */
   
+  exit_status_code = EXIT_SUCCESS;
+  g_thread_init (NULL);
+  g_type_init ();
+  
+  // Initiate the timer
+  GTimer *start_timer =  g_timer_new ();
+  
+  /* Define localization */
+  ut_config.locale = setlocale (LC_ALL, "");
+  if (!ut_config.locale)
+  {
+    g_error (_("Error during setting current locale. Falling back to default locale."));
+    ut_config.locale = setlocale (LC_ALL, "C");
+    if (!ut_config.locale)
+    {
+      g_critical (_("Couldn't set any locale. Exiting..."));
+      exit (EXIT_FAILURE);
+    }
+  }
+  
+  /* i18n */
   g_set_prgname (PACKAGE);
   bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
   
-  set_tty_canonical(1);
+  /* Set the canonical mode for the terminal */
+  set_tty_canonical (1);
   
-  // Get the current time
-  GTimer *start_timer =  g_timer_new();
-   
   /* Set the function to call in case of receiving signals:
-   * we need to stop the main loop to exit gracefully, but
-   * with error code anyway!
+   * we need to stop the main loop to exit correctly, but
+   * with error code!
    */
-  signal(SIGALRM,  error_quitloop);
-  signal(SIGHUP,   error_quitloop);
-  signal(SIGINT,   error_quitloop);
-  signal(SIGPIPE,  error_quitloop);
-  signal(SIGQUIT,  error_quitloop);
-  signal(SIGTERM,  error_quitloop);
-   
-  ut_config.locale = setlocale(LC_ALL, "");
-  if (!ut_config.locale)
-  {
-    g_error(_("Error during setting current locale. Falling back to default locale."));
-    ut_config.locale = setlocale(LC_ALL, "C");
-    if (!ut_config.locale)
-    {
-      g_critical(_("Couldn't set any locale. Exiting..."));
-      exit(EXIT_FAILURE);
-    }
-  }
+  signal (SIGALRM,  error_quitloop);
+  signal (SIGHUP,   error_quitloop);
+  signal (SIGINT,   error_quitloop);
+  signal (SIGPIPE,  error_quitloop);
+  signal (SIGQUIT,  error_quitloop);
+  signal (SIGTERM,  error_quitloop);
   
+            /* ------------ Initialization is done ---------- */
   
-  /* Parse the options */
+            /* -------------- Options parsing ------------- */
+  
   tmp = g_strconcat (_("[ARGUMENTS] - "), SHORTDESCRIPTION, NULL);
   context = g_option_context_new (tmp);
   g_free (tmp);
@@ -99,8 +104,8 @@ int main (int argc, char *argv[])
   g_option_context_set_summary (context, SUMMARY);
   
   tmp = g_strconcat (DESCRIPTION, 
-                     _("\nReport any bug to: bugs@utimer.codealpha.net\
-or  https://bugs.launchpad.net/utimer"),
+                     _("\nReport any bug to: https://bugs.launchpad.net/utimer\
+ (bugs@utimer.codealpha.net)"),
                      NULL);
   g_option_context_set_description (context, tmp);
   g_free (tmp);
@@ -109,10 +114,19 @@ or  https://bugs.launchpad.net/utimer"),
   
   if (!g_option_context_parse (context, &argc, &argv, &error))
   {
-    g_error (_("Option parsing failed: %s"), error->message);
+    g_printerr (_("Error while parsing options: %s.\nRun '%s --help' to see a\
+ full list of available command line options.\n"),
+                  error->message,
+                  argv[0]);
+    g_error_free (error);
+    exit (EXIT_FAILURE);
   }
   
-  g_option_context_free(context);
+  g_option_context_free (context);
+
+  
+            /* ------------ Options parsing DONE ------------- */
+  
   
   /* Verify that there is at least an option */
   if (!( ut_config.isTimer
@@ -124,9 +138,21 @@ or  https://bugs.launchpad.net/utimer"),
  use the the timer.\nTo see the usage help, type: utimer --help\n\n"));
     exit(EXIT_FAILURE);
   }
-
   
-  /* ***************** PROCESSING STARTS ***************** */
+  
+  /* Check if there is any conflicting options */
+  
+  if (ut_config.debug)
+    ut_config.quiet = FALSE;
+  
+  if (ut_config.isTimer && ut_config.isCountdown)
+  {
+    g_warning (_("The following options cannot be used with each other:\
+ -t (timer mode), -c (countdown mode), -s (stopwatch mode). The Timer mode will\
+  be used by default."));
+    g_free (ut_config.isCountdown);
+    ut_config.isCountdown = NULL;
+  }
   
   /* set up the verbose/debug log handler */
   g_log_set_handler (NULL,
@@ -138,21 +164,19 @@ or  https://bugs.launchpad.net/utimer"),
                      NULL);
   
   
-  g_debug("G_MAXLONG  = %li", G_MAXLONG);
-  g_debug("G_MAXUINT  = %u", G_MAXUINT);
-  g_debug("sizeof(gulong) = %i", sizeof(gulong));
+  g_debug ("G_MAXUINT = %u", G_MAXUINT);
   
-  if(isatty (STDOUT_FILENO))
-    g_debug("\033[34mTTY!!!\033[m");
+  if (isatty (STDOUT_FILENO))
+    g_debug ("\033[34mYou are using a TTY.\033[m");
   else
-    g_debug("NOT A TTY!!!");
+    g_debug ("You are not using a TTY.");
   
-  if(ut_config.verbose)
+  if (ut_config.verbose)
   {
-    g_debug("Deactivating buffered output for stderr and stdout...");
+    g_debug ("Deactivating buffered output for stderr and stdout...");
     
-    setbuf(stdout, NULL);
-    setbuf(stderr, NULL);
+    setbuf (stdout, NULL);
+    setbuf (stderr, NULL);
   }
   
   /* Check for arguments */
@@ -173,24 +197,24 @@ or  https://bugs.launchpad.net/utimer"),
   //~ }
   
   /* Now that we treated every arg, we can free remaining_args. */
-  g_strfreev(remaining_args);
+  //~ g_strfreev(remaining_args);
   
   /* Showing limits */
   
-  if(ut_config.show_limits)
+  if (ut_config.show_limits)
   {
-    g_print(_("This is a list of the possible limits of µTimer for your machine.\n\n"));
+    g_print (_("This is a list of the possible limits of µTimer for your machine.\n\n"));
     
-    tmp = timer_get_maximum_time();
-    g_print(_("* Limits for the Timer:\n"));
-    g_print(_("\t- The maximum possible timer length is: %s.\n"), tmp);
-    g_print(_("\t  If you enter a value that is exceeding it, it will be\
+    tmp = timer_get_maximum_time ();
+    g_print (_("* Limits for the Timer:\n"));
+    g_print (_("\t- The maximum possible timer length is: %s.\n"), tmp);
+    g_print (_("\t  If you enter a value that is exceeding it, it will be\
  replaced by the value above.\n"));
     
-    g_free(tmp);
+    g_free (tmp);
     tmp = NULL;
     
-    exit(EXIT_SUCCESS);
+    exit (EXIT_SUCCESS);
   }
   
   /* Showing version */
@@ -201,65 +225,74 @@ or  https://bugs.launchpad.net/utimer"),
     exit(EXIT_SUCCESS);
   }
   
+        /* ------------------ PROCESSING STARTS ------------------ */
   
-  /*==== Prepare for starting the main loop ====*/
+  /* Prepare for starting the main loop */
   
   loop = g_main_loop_new (NULL, FALSE);
   
   g_idle_add((GSourceFunc) start_thread_exit_check, NULL);
   
-  /* -------------- TIMER MODE -------------- */
-  if(ut_config.isTimer)
+  /* -------------- TIMER&COUNTDOWN MODE -------------- */
+  if(ut_config.isTimer || ut_config.isCountdown)
   {
-    timer_init(&ttimer);
-    if(update_timer_mutex == NULL)
-      update_timer_mutex = g_mutex_new ();
+    if(ut_config.isCountdown)
+    {
+      g_debug ("Countdown Mode");
+      countdown_init (&ttimer);
+    }
+    else
+    {
+      g_debug ("Timer Mode");
+      timer_init (&ttimer);
+    }
     
-    g_debug("Timer Mode");
-    
-    tmp = timer_get_maximum_time();
-    g_debug("Timer length maximum is %s.", tmp);
-    g_free(tmp);
+    tmp = timer_get_maximum_time ();
+    g_debug ("Maximum Timer length is %s.", tmp);
+    g_free (tmp);
     tmp = NULL;
     
+    /* Bind some callback functions */
     ttimer.success_callback = success_quitloop;
     ttimer.error_callback   = error_quitloop;
-    ttimer.start_timer = start_timer;
+    ttimer.start_timer      = start_timer; /* bind the GTimer too */
     
-    parse_time_pattern(ut_config.isTimer, &ttimer);
+    /* Parse the user-given time length */
+    if (ut_config.isCountdown)
+      parse_time_pattern (ut_config.isCountdown, &ttimer);
+    else
+      parse_time_pattern (ut_config.isTimer, &ttimer);
     
-    tmp = timer_ut_timer_to_string(ttimer);
-    g_info(_("Timer will exit after reaching: %s"), tmp);
-    g_free(tmp);
+    tmp = timer_ut_timer_to_string (ttimer);
+    g_info (_("Timer will exit after reaching: %s"), tmp);
+    g_free (tmp);
     tmp = NULL;
     
-    ttimer.update_timer_safe_source_id = g_timeout_add(TIMER_REFRESH_RATE,
+    ttimer.update_timer_safe_source_id = g_timeout_add (TIMER_REFRESH_RATE,
                                         (GSourceFunc) timer_update,
                                         &ttimer);
-    g_idle_add((GSourceFunc) timer_start_thread, &ttimer);
+    g_idle_add ((GSourceFunc) timer_start_thread, &ttimer);
     
+  } /* -------------- END TIMER&COUNTDOWN MODE -------------- */
+  else
+  { /* No mode selected! We quit the loop ASAP. */
+    g_idle_add  ((GSourceFunc) error_quitloop, NULL);
   }
-  /* -------------- END TIMER MODE -------------- */
   
-  /* -------------- COUNTDOWN MODE -------------- */
-  if(ut_config.isCountdown)
-  {
-    g_debug("Countdown Mode");
-    g_warning("*Not implemented yet*");
-    
-    g_idle_add((GSourceFunc) success_quitloop, NULL);
-  }
-  /* -------------- END COUNTDOWN MODE -------------- */
   
-  /* Starting the main loop */
+  /* ------------- Starting the main loop ---------------- */
   
   g_debug ("Starting main loop...");
   g_main_loop_run (loop);
-  g_debug ("Quitted main loop...");
+  g_debug ("Exiting main loop...");
   
-  g_timer_destroy(start_timer);
-  set_tty_canonical(0);
-  g_debug("Quitting with error code: %i", exit_status_code);
+  /* ------------- Main loop Exited ---------------- */
+  
+  g_timer_destroy (start_timer);
+  set_tty_canonical (0);
+  g_debug ("Quitting with error code: %i", exit_status_code);
+  
+        /* ================== MAIN DONE ==================== */
   return exit_status_code;
 }
 
@@ -273,7 +306,7 @@ int start_thread_exit_check ()
   GError  *error = NULL;
   
   g_debug("Starting thread exit check");
-  if (!g_thread_create((GThreadFunc) check_exit_from_user, NULL, FALSE, &error))
+  if (!g_thread_create ((GThreadFunc) check_exit_from_user, NULL, FALSE, &error))
   {
     g_error (_("Thread failed: %s"), error->message);
   }
@@ -288,8 +321,8 @@ void set_tty_canonical (int state)
 {
   struct termios ttystate;
 
-  tcgetattr(STDIN_FILENO, &savedttystate);
-  tcgetattr(STDIN_FILENO, &ttystate);
+  tcgetattr (STDIN_FILENO, &savedttystate);
+  tcgetattr (STDIN_FILENO, &ttystate);
 
   if (state==1)
   {  
@@ -298,10 +331,10 @@ void set_tty_canonical (int state)
   }
   else if (state==0)
   {
-    tcsetattr(STDIN_FILENO, TCSANOW, &savedttystate); // put canonical mode back
+    tcsetattr (STDIN_FILENO, TCSANOW, &savedttystate); // put canonical mode back
   }
   
-  tcsetattr(STDIN_FILENO, TCSANOW, &ttystate); // apply the changes
+  tcsetattr (STDIN_FILENO, TCSANOW, &ttystate); // apply the changes
 }
 
 /**
@@ -311,7 +344,7 @@ void set_tty_canonical (int state)
  */
 void quitloop (int error_status)
 {
-  g_print("\n");
+  g_message ("\n");
   g_debug ("Stopping Main Loop (error code: %i)...", error_status);
   
   // We set the exit status code
@@ -338,7 +371,7 @@ void error_quitloop ()
  */
 void success_quitloop ()
 {
-  quitloop(EXIT_SUCCESS);
+  quitloop (EXIT_SUCCESS);
 }
 
 /**
@@ -352,10 +385,10 @@ int check_exit_from_user ()
   gint c;
   do
   {
-    c = fgetc(stdin);
-    g_print("\b ");
-  } while(c != 'q' || c == 27); // checks for 'q' key or Escape
+    c = fgetc (stdin);
+    g_print ("\b ");
+  } while (c != 'q' || c == 27); /* checks for 'q' key or Escape */
   
-  // If the user asks for exiting, we stop the loop.
-  quitloop( (ut_config.quit_with_success ? EXIT_SUCCESS : EXIT_FAILURE) );
+  /* If the user asks for exiting, we stop the loop. */
+  quitloop ( (ut_config.quit_with_success ? EXIT_SUCCESS : EXIT_FAILURE) );
 }

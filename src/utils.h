@@ -24,29 +24,9 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-typedef enum
-{
-  TU_DAY    = 0,
-  TU_MONTH  = 1,
-  TU_YEAR   = 2,
-  TU_HOUR   = 3,
-  TU_MINUTE = 4,
-  TU_SECOND = 5,
-  TU_MILLISECOND = 6
-} TimeUnit;
-
-typedef enum
-{
-  STD_OK        = 0,
-  STD_OVERFLOW  = 1,
-  STD_UNDERFLOW = 2,
-  STD_EMPTY     = 3,
-  STD_UNKNOWN   = 4
-} strtodouble_error;
-
-strtodouble_error strtodouble (char *str, char *endptr, gdouble *result);
-
-gulong        ul_mul                    (gulong a, gulong b);
-gulong        ul_add                    (gulong a, gulong b);
+gulong        ul_mul                    (gulong a,  gulong b);
+gulong        ul_add                    (gulong a,  gulong b);
+guint         ui_add                    (guint a,   guint b);
+guint         ui_mul                    (guint a,   guint b);
 
 #endif /* UTILS_H */

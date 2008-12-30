@@ -33,11 +33,11 @@ typedef struct
   gchar       *isTimer;
   gchar       *isCountdown;
   gboolean    verbose;
+  gboolean    quiet;
   gboolean    show_version;
   gboolean    debug;
   gboolean    show_limits;
   gboolean    quit_with_success;
-  
 } utconfig;
 
 utconfig ut_config;

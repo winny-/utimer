@@ -9,8 +9,8 @@ Description
 multifunction timer (command-line only).
 It provides:
  - a timer (e.g. count from 0 to 4 minutes and 20 seconds),
- - a countdown (NOT AVAILABLE in versions 0.1.x) (e.g. count from 10 min. to 0),
- - a stopwatch (NOT AVAILABLE in versions 0.1.x).
+ - a countdown (e.g. count from 1 hour and 10 minutes down to 0),
+ - a stopwatch (NOT AVAILABLE in version @PACKAGE_VERSION@).
 
 Version Information
 -------------------
@@ -74,40 +74,59 @@ into the source code.
 
 Usage
 -----
-The only function available in this version is the Timer.
+
+(See the man page for more information.)
 
 Timer:
-
-  To use the timer, you have to use the -t option. This option requires a time
+  
+  The timer mode will reach the given time length and then exits.
+  
+  For the timer, you have to use the -t option. This option requires a time
   length to be given, like this:
 
-  utimer -t 1h30m45s300ms
+    utimer -t 1h30m45s300ms
 
   The time length is composed of pairs of a value and a suffix, it can be in any
   order.
   The known suffixes are:
 
-  d: days
-  h: hours
-  m: minutes
-  s: seconds
-  ms: milliseconds
+    d: days
+    h: hours
+    m: minutes
+    s: seconds
+    ms: milliseconds
 
   The value must be a positive integer and can be null.
   Here's a few examples of valid time lengths:
 
-  10s300ms
-  400ms
-  2d
-  15m1h
-  0s0d87h451ms
-  0ms
+    10s300ms
+    400ms
+    2d
+    15m1h
+    0s0d87h451ms
+    0ms
   
-  You can also use the timer in scripts, like this for example:
+  You can also use the timer in scripts, like this for example (in bash):
   
-  utimer -t 10m && wget www.mywebsite.com/myscript
-  utimer -t 1d5h38m && reboot
-  utimer -t 500ms && do_cpu_stuff && utimer -t 500ms && do_other_cpu_stuff
+    utimer -t 10m && wget "http://www.mywebsite.com/myscript"
+    utimer -t 1d5h38m && reboot
+  
+  Or you try this command (in bash):
+  
+    echo -n Hi && utimer -qt 900ms && echo -e "\rHello" && utimer -qt 900ms
+
+Countdown:
+  
+  The countdown starts counting from the given time length down to 0, and then
+  exits.
+  
+  The countdown mode works almost the same as the timer (see above), except you
+  have to use the -c option.
+  
+  For example:
+  
+    utimer -c 1m30s
+  
   
 
 Copyright
@@ -119,6 +138,5 @@ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 
-For more information, please read the COPYING file and see the AUTHORS file also
-.
+For more information, please read the COPYING file and AUTHORS file.
 

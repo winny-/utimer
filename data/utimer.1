@@ -5,11 +5,16 @@
 .SH "SYNOPSIS"
 .B utimer
 .RI [\-\-timer=TIMELENGTH\ |\ \-t\ TIMELENGTH]
-.RI [\-\-verbose]q
+.RI [\-\-countdown=TIMELENGTH\ |\ \-c\ TIMELENGTH]
+.RI [\-\-quiet\ |\ \-q]
+.RI [\-\-verbose\ |\ \-v]
 .RI [\-\-quit\-with\-success]
 
 .B utimer
-.RI [\-\-limits]
+.RI [\-\-limits\ |\ \-L]
+
+.B utimer
+.RI [\-\-version]
 .SH "DESCRIPTION"
 .B utimer
 or 
@@ -18,15 +23,13 @@ or
 
 The
 .B timer
-is like a countdown but the elapsed time is increasing to reach the given time length. Given a time length, the timer will "sleep" or wait till the time length has passed, then exits. Compared to the linux
+counts the elapsed time, increasing to reach the given time length and then stops. Given a time length, the timer will "sleep", wait or pause till the time length has passed, then exits. Compared to the linux
 .B sleep
-function, µTimer actually shows the elapsed time which can be useful for long time lengths.
+function, µTimer actually shows the current elapsed time which can be useful for long time lengths.
 
 The
-.B countdown
-, compared to the timer, has the only difference that the starting point is the given time length and it will decrease to reach 0. When it reaches 0 (when the time length has passed), the program exits. It can very useful for creating scripts that should run a function in a certain period of time only. (
-.B The countdown is not implemented yet!
-)
+.B countdown,
+compared to the timer, has the only difference that the starting point is the given time length and it will decrease to reach 0. When it reaches 0 (when the time length has passed), the program exits. It can be very useful for creating scripts.
 
 The
 .B stopwatch
@@ -37,37 +40,54 @@ is like a real stopwatch where you can measure time of multiple events, or use i
 .LP 
 .SH "OPTIONS"
 .B
-.IP --help | -?
+.IP --help\ |\ \-?
 Print the command line options.
 .B
-.IP --timer=TIMELENGTH | -t TIMELENGTH
-Shows a timer that runs until TIMELENGTH has passed. TIMELENGTH is pattern that should look like: 2d15h39m58s120ms. See the 
+.IP --timer=TIMELENGTH\ |\ \-t\ TIMELENGTH
+Shows a timer that runs until TIMELENGTH has passed. TIMELENGTH is a pattern that should look like: 2d15h39m58s120ms. See the 
 .B Timer
 section in
 .B USAGE
 to read more about how to use the timer.
 .B
-.IP --verbose
-Print more information during the program's process.
+.IP --countdown=TIMELENGTH\ |\ \-c\ TIMELENGTH
+Shows a countdown that runs until TIMELENGTH has passed (until it reaches zero). TIMELENGTH is a pattern that should look like: 2d15h39m58s120ms. See the 
+.B Countdown
+section in
+.B USAGE
+to read more about how to use the countdown.
 .B
-.IP --debug
+.IP --verbose\ |\ \-v
+Print more information during the program's process. (note that if used with -q, this option is ignored)
+.B
+.IP --quiet\ |\ \-q
+Quiet or silent output (almost no output) (note that if used with -v, -v is ignored).
+.B
+.IP --debug\ |\ \-D
 Show debug information in output (should ONLY be used for bug reporting, for developers or for testing purposes).
 .B
-.IP --limits
+.IP --limits\ |\ \-L
 Display the limits of
 .B µTimer
 for your machine (maximum values, longest timer, ...). It may be not be perfectly accurate. Use this option only to have an idea of what it can do.
 .B
 .IP --quit-with-success
-When you quit the program using the 'q' key, it will exit with a success exit status code, instead of an error one normally.
+When you quit the program using the 'q' key, it will exit with a success exit status code, instead of an error one normally. (Note that 'ctrl+c' isn't affected by this option)
 .SH "USAGE"
 .B
-Timer:
+.IP Timer:
 
-When using the timer, µTimer will show you the current elapsed time and then will exit when TIMELENGTH is reached (read: when that TIMELENGTH has passed). It can be useful for scripts, or even for everyday (geek or not!) use.
-The TIMELENGTH is composed of pairs of a value and a suffix (for example "39d" for 39 days). It can be in any order, and there is no space between each pair. Each value 
+
+.B utimer --timer=TIMELENGTH
+or
+.B utimer -t TIMELENGTH
+
+When using the timer, µTimer will show the current elapsed time and then will exit when TIMELENGTH is reached (read: when that TIMELENGTH has passed).
+The TIMELENGTH is composed of pairs of: a value + a suffix (for example "39d" for 39 days). It can be in any order, and there is no space between each pair. Each value 
 .B must be a positive integer
-and can be null (0). The suffix is case sensitive (see below for the suffixes list). 
+and can be null (0). The suffix is case
+.B sensitive
+(see below for the suffixes list). 
 
 Here's a few valid examples of TIMELENGTH:
 55s,
@@ -89,7 +109,6 @@ for seconds,
 .B ms
 for milliseconds.
 
-The timer can be accurate enough for most common uses. Don't expect it to have a 1-ms accuracy. It highly depends on your machine, you can expect an accuracy of 100 ms for sure.
 
 
 Also you can stop/quit the timer whenever by using the 'q' key, note that the program will exit with a error exit status code (1) (you can bypass this behaviour by using the
@@ -98,31 +117,50 @@ option).
 
 .B
 .IP Countdown:
-Not available in versions 0.1.x.
+
+.B utimer --countdown=TIMELENGTH
+or
+.B utimer -c TIMELENGTH
+
+When using the countdown, µTimer will show the current remaining time before exiting. After TIMELENGTH has passed -or when the remaining time reaches zero (0)- µTimer exits.
+See the Timer usage to know how the TIMELENGTH is formed.
 .B
 .IP Stopwatch:
-Not available in versions 0.1.x.
+Not available in this version.
 .SH EXIT STATUS
-After the timer or the countdown are done, the program exits with a success exit status code (0). You can change this behaviour using the 
+After the timer or the countdown are done, the program exits with a success exit status code (0). But when you quit during the timer/countdown is counting using 'q', it exits with an error exit status code (1). You can change this behaviour using the 
 .B --quit-with-success
-option.
-.B µTimer
-can be easily used with other scripts using this option (e.g. to reboot in 10 minutes, and you can see the time elapsed since you launched the script).
+option. (Note that 'ctrl+c' isn't affected by this option)
 
-.SH EXAMPLE
-.B
-Timer:
+.SH "EXAMPLE"
+.IP Timer:
 
-.IP
-.B \./utimer \-t 20s900ms
+
+.B utimer \-t 20s900ms
 runs the timer for 20 seconds and 900 milliseconds.
 .IP
-.B \./utimer \-t 1d
+.B utimer \--timer=1d
 runs the timer for a whole day.
+
+.IP Countdown:
+
+.B utimer \-c 1m48s500ms
+runs the countdown for 1 minute, 48 seconds and 500 milliseconds.
+.IP
+.B utimer \--countdown=2d5m
+runs the countdown for 2 days plus 5 minutes.
+.SH "ACCURACY"
+The timer can be accurate enough for most common uses but don't expect it to have a better accuracy than 5 ms because it highly depends on your machine. You can expect an accuracy that is under 100 ms for sure. On our test machines, it doesn't go over 20 ms.
+
+Note that µtimer tries to substract the time needed to start the program to the given timelength to increase accuracy.
 .SH "BUGS"
-If you find any bug, please report it at:
+If you find any bug using µTimer, please report it to:
+
 .B https://bugs.launchpad.net/utimer
-or send it at
+
+.B or
+send it to:
+
 .B bugs@utimer.codealpha.net
 .SH "AUTHOR"
-Arnaud Soyez (weboide@codealpha.net)
+Arnaud "Weboide" Soyez <weboide@codealpha.net>
