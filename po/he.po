@@ -1,4 +1,4 @@
-# French translation for utimer
+# Hebrew translation for utimer
 # Copyright (c) 2008 Rosetta Contributors and Canonical Ltd 2008
 # This file is distributed under the same license as the utimer package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2008.
@@ -8,9 +8,9 @@ msgstr ""
 "Project-Id-Version: utimer\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2008-12-31 12:35-0500\n"
-"PO-Revision-Date: 2008-12-09 20:24+0000\n"
-"Last-Translator: Arnaud \"Weboide\" Soyez <weboide@codealpha.net>\n"
-"Language-Team: French <fr@li.org>\n"
+"PO-Revision-Date: 2008-12-20 09:22+0000\n"
+"Last-Translator: Yaron <sh.yaron@gmail.com>\n"
+"Language-Team: Hebrew <he@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,11 +19,11 @@ msgstr ""
 
 #: ../src/utimer.c:70
 msgid "Error during setting current locale. Falling back to default locale."
-msgstr "Erreur durant le choix de la locale. Retour sur la locale par défaut."
+msgstr "ארעה שגיאה בעת הגדרת השפה הנוכחית. מחזיר לשפת ברירת המחדל."
 
 #: ../src/utimer.c:74
 msgid "Couldn't set any locale. Exiting..."
-msgstr "Impossible de définir une locale. Arrêt en cours..."
+msgstr "לא ניתן להגדיר שפה. מבצע יציאה..."
 
 #. ------------ Initialization is done ----------
 #. -------------- Options parsing -------------
@@ -37,26 +37,21 @@ msgid ""
 "Report any bug to: https://bugs.launchpad.net/utimer (bugs@utimer.codealpha."
 "net)"
 msgstr ""
-"\n"
-"En cas de bugs, signalez-le à : https://bugs.launchpad.net/utimer "
-"(bugs@utimer.codealpha.net)"
 
 #: ../src/utimer.c:118
 #, c-format
 msgid "Error while parsing options: %s.\n"
-msgstr "Erreur pendant le traitement des options: %s.\n"
+msgstr ""
 
 #: ../src/utimer.c:119 ../src/utimer.c:138
 #, c-format
 msgid "Run '%s --help' to see a full list of available command line options.\n"
 msgstr ""
-"Lancez '%s --help' afin d'obtenir une liste complète des options de la ligne "
-"de commande.\n"
 
 #: ../src/utimer.c:137
 #, c-format
 msgid "No option has been specified!\n"
-msgstr "Aucune option n'a été spécifiée !\n"
+msgstr ""
 
 #: ../src/utimer.c:151
 msgid ""
@@ -71,7 +66,7 @@ msgid ""
 "This is a list of the possible limits of µTimer for your machine.\n"
 "\n"
 msgstr ""
-"Ceci est la liste des limites possibles de µTimer pour cette machine.\n"
+"זוהי רשימה של מגבלות אפשרויות של µTimer עבור המחשב שלך.\n"
 "\n"
 
 #: ../src/utimer.c:211
@@ -82,7 +77,7 @@ msgstr ""
 #: ../src/utimer.c:212
 #, c-format
 msgid "\t- The maximum possible timer length is: %s.\n"
-msgstr "\t- La durée maximum du timer est : %s.\n"
+msgstr "\t- משך המדידה המרבי הינו: %s.\n"
 
 #: ../src/utimer.c:213
 #, c-format
@@ -90,25 +85,23 @@ msgid ""
 "\t  If you enter a value that is exceeding it, it will be replaced by the "
 "value above.\n"
 msgstr ""
-"\t  Si vous saisissez une valeur plus grande, elle sera remplacée par la "
-"valeur ci-dessus.\n"
+"\t  אם תזין ערך החורג מערך זה, הוא יוחלף בערך שלהלן.\n"
+".\n"
 
 #: ../src/utimer.c:269
 #, c-format
 msgid "Timer will exit after reaching: %s"
-msgstr "Le timer se fermera après avoir atteint : %s"
+msgstr "שעון המדידה יצא לאחר שיגיע ל־:%s"
 
 #: ../src/utimer.c:313 ../src/timer.c:124
 #, c-format
 msgid "Thread failed: %s"
-msgstr "Echec du thread : %s"
+msgstr "האשכול נכשל: %s"
 
 #: ../src/utimer.h:29
 msgid ""
 "command-line \"timer\" which features a timer, a countdown and a stopwatch"
-msgstr ""
-"\"timer\" en ligne de commande qui fournit un timer, un compte à rebours et "
-"un chronomètre"
+msgstr "הפקודה \"timer\" המציגה שעון מדידה, שעון לספירה לאחור ושעון עצר"
 
 #: ../src/utimer.h:32
 msgid ""
@@ -131,7 +124,7 @@ msgstr ""
 
 #: ../src/utimer.h:67 ../src/utimer.h:77
 msgid "TIMELENGTH"
-msgstr "PERIODEDETEMPS"
+msgstr "TIMELENGTH"
 
 #: ../src/utimer.h:75
 msgid "count from TIMELENGTH down to 0 and exit (e.g. utimer -c 30d9h50s)."
@@ -156,7 +149,7 @@ msgstr ""
 
 #: ../src/utimer.h:122
 msgid "Display the current version of µTimer."
-msgstr "Affiche la version actuelle de µTimer."
+msgstr "הצג את הגירסה הנוכחית של µTimer."
 
 #: ../src/utimer.h:131
 msgid "Debug output."
@@ -165,12 +158,12 @@ msgstr ""
 #: ../src/timer.c:49
 #, c-format
 msgid "\rTime Remaining: %s "
-msgstr "\rTemps restant : %s "
+msgstr ""
 
 #: ../src/timer.c:51
 #, c-format
 msgid "\rElapsed Time: %s "
-msgstr "\rTemps écoulé : %s "
+msgstr ""
 
 #: ../src/timer.c:164
 #, c-format
@@ -185,7 +178,7 @@ msgstr ""
 #: ../src/timer.c:182
 #, c-format
 msgid "Error when trying to parse: %s"
-msgstr "Erreur en tentant d'interpréter : %s"
+msgstr "שגיאה בעת הנסיון לניתוח: %s"
 
 #: ../src/timer.c:257
 #, c-format
@@ -193,15 +186,15 @@ msgctxt ""
 "NUMDAYS days HOURS:MINUTES:SECONDS:MILLISECONDS (SECONDS.MILLISECONDS "
 "seconds)"
 msgid "%u days %02u:%02u:%02u.%03u (%u.%03u seconds)"
-msgstr "%u jours %02u:%02u:%02u.%03u (%u.%03u secondes)"
+msgstr ""
 
 #: ../src/log.c:65
 #, c-format
 msgid "** WARNING: %s\n"
-msgstr "** ATTENTION: %s\n"
+msgstr "** אזהרה: %s\n"
 
 #~ msgid "* Limits for the Timer:\n"
-#~ msgstr "* Limites du timer :\n"
+#~ msgstr "* מגבלות עבור שעון המדידה:\n"
 
 #~ msgid ""
 #~ "No option specified!\n"
@@ -210,10 +203,10 @@ msgstr "** ATTENTION: %s\n"
 #~ "To see the usage help, type: utimer --help\n"
 #~ "\n"
 #~ msgstr ""
-#~ "Aucune option n'a été spécifée!\n"
+#~ "לא צויינה אפשרות!\n"
 #~ "\n"
-#~ "Utilisez \"-t TIMELENGTH\" si vous souhaitez utiliser le timer.\n"
-#~ "Pour afficher l'aide d'utilisation, entrez: utimer --help\n"
+#~ "השתמש ב־e \"-t TIMELENGTH\" אם ברצונך להשתמש בשעון המדידה.\n"
+#~ "To see the usage help, type: utimer --help\n"
 #~ "\n"
 
 #~ msgid ""
@@ -222,16 +215,14 @@ msgstr "** ATTENTION: %s\n"
 #~ "net/utimer"
 #~ msgstr ""
 #~ "\n"
-#~ "En cas de bugs, envoyez un mail à : bugs@utimer.codealpha.net ou allez "
-#~ "sur https://bugs.launchpad.net/utimer"
+#~ "דווחו על תקלות לכתובת: bugs@utimer.codealpha.net או  https://bugs."
+#~ "launchpad.net/utimer"
 
 #~ msgid "Option parsing failed: %s"
-#~ msgstr "Echec de l'intrepretation de l'option : %s"
+#~ msgstr "ניתוח האפשרויות נכשל: %s"
 
 #~ msgid "\t- This program is not Year-2038-bug safe (on a 32 bits machine)!\n"
-#~ msgstr ""
-#~ "\t- Ce programme est vulnérable au bogue de l'an 2038 (sur une machine 32 "
-#~ "bits) !\n"
+#~ msgstr "\t- תוכנה זו אינה מוגנת בפני באג־2038 (במערכות 32 סיביות)!\n"
 
 #~ msgid ""
 #~ " µTimer (or \"utimer\", pronounced as \"micro-timer\") is a multifunction "
@@ -247,93 +238,84 @@ msgstr "** ATTENTION: %s\n"
 #~ "for example. The stopwatch, which is not concerned, needs to be stopped "
 #~ "manually using 'ctrl+c' or 'q'."
 #~ msgstr ""
-#~ " µTimer (ou \"utimer\", prononcé \"micro-timer\") est un timer "
-#~ "multifonction (ligne de commande uniquement).\n"
+#~ " µTimer (או \"utimer\", יש לבטא כ־ \"micro-timer\" או \"שעון מדידה\") "
+#~ "הינו שעון מדידה בעל תכונות רבות (לשורת הפקודה בלבד).\n"
 #~ "\n"
-#~ " Les principales fonctions sont \n"
-#~ "\t- un timer (ex. compter de 0 à 4 minutes),\n"
-#~ "\t- un compte à rebours (ex. compter de 10 minutes à 0 minutes),\n"
-#~ "\t- un chronomètre.\n"
+#~ " התכונות העיקריות הן:\n"
+#~ "\t- שעון מדידה (לדוגמה ספירה מ־0 עד 4 דקות),\n"
+#~ "\t- ספירה לאחור (כלומר ספירה מ־10 דקות עד 0),\n"
+#~ "\t- שעון עצר.\n"
 #~ "\n"
-#~ " µTimer se ferme toujours après que le timer ou le compte à rebours ont "
-#~ "écoulé à moins du contraire spécifié par une option. Ceci peut être "
-#~ "utile, par exemple, pour définir un compte à rebours pour des scripts. Le "
-#~ "chronomètre n'est pas concerné par cette particularité. Il a besoin "
-#~ "d'être arrêté manuellement en appuyant sur 'ctrl+c' ou 'q'."
+#~ " µTimer תמיד תצא לאחר פעולת המדידה או הספירה לאחור אלא אם כן צויין אחרת. "
+#~ "פעולה זו יכולה להיות שימושית לכתיבת סקריפטים לספירה לאחור, לדוגמה. שעון "
+#~ "העצר, הממתין לפקודת עצירה, אותו יש לעצור באמצעות 'ctrl+c' או 'q'."
 
 #~ msgid "Verbose output"
-#~ msgstr "Sortie verbeuse"
+#~ msgstr "פלט מפורט"
 
 #~ msgid "Debug output (use only for debugging purposes or for bug reports)"
 #~ msgstr ""
-#~ "Sortie de débuggage (à utiliser uniquement pour débugger ou pour des "
-#~ "rapports de bug)"
+#~ "פלט לניפוי שגיאות (השתמש רק לצורכי ניפוי שגיאות או לדיווחים על שגיאות)"
 
 #~ msgid ""
 #~ "Timer mode: the program will exit after a certain TIMELENGTH (e.g. utimer "
 #~ "-t 5d18h31m27s300ms)."
 #~ msgstr ""
-#~ "Mode Timer : le programme se fermera après une certaine PERIODEDETEMPS "
-#~ "(ex: utimer -t 5d18h31m27s300ms)."
+#~ "מצב שעון המדידה: התוכנה תצא לאחר משך זמן (המצויין כ־TIMELENGTH) (לדוגמה: "
+#~ "utimer -t 5d18h31m27s300ms)."
 
 #~ msgid ""
 #~ "Show the limits of µTimer (Maximum time length, Year 2038 bug, etc...)"
 #~ msgstr ""
-#~ "Affiche les limites de µTimer (Période de temps maximum, bogue de l'an "
-#~ "2038, etc...)"
+#~ "הצג את מגבלות הזמן של µTimer (משך הזמן המרבי, באג 2038, וכן הלאה...)"
 
 #~ msgid ""
 #~ "When (and only when) the user hits the 'q' key to end the program, the "
 #~ "program will exit with a SUCCESS (0) exit status instead of a non-zero/"
 #~ "error (1) exit status (this might be useful for developers)."
 #~ msgstr ""
-#~ "Quand (et seulement quand) l'utilisateur appuie sur la touche 'q' afin de "
-#~ "terminer le programme, le programe va se fermer en retournant un code de "
-#~ "sortie (0) signifiant un SUCCES au lieu d'un code de sortie non-nul "
-#~ "signifiant une ERREUR (1) (ceci peut être utile pour les développeurs)."
+#~ "כאשר (אך ורק כאשר) המשתמש לוחץ על המקש 'q' כדי לסיים את פעולת התוכנית, "
+#~ "התוכנית תסיים עם מצב היציאה SUCCESS (0) במקום מצב יציאה שגיאתי/שאינו אפס "
+#~ "(1) (מה שעלול להיות יעיל למפתחים)."
 
 #~ msgid "\rElapsed Time: %s"
-#~ msgstr "\rTemps écoulé : %s"
+#~ msgstr "\rזמן שעבר: %s"
 
 #~ msgid ""
 #~ "\n"
 #~ "***************** IMPORTANT *****************"
 #~ msgstr ""
 #~ "\n"
-#~ "***************** IMPORTANT *****************"
+#~ "***************** !!!חשוב!!! *****************"
 
 #~ msgid ""
 #~ "Possible overflow! (is it Year 2038 bug?). The start time is after the "
 #~ "current time!"
 #~ msgstr ""
-#~ "Dépassement de mémoire possible ! (Est-ce le bug de l'an 2038 ?). L'heure "
-#~ "de lancement est postérieure à l'heure actuelle."
+#~ "יתכן כי ארעה הצפה! (אולי באג 2038?). זמן ההתחלה הינו לאחר הזמן הנוכחי!"
 
 #~ msgid ""
 #~ "IMPORTANT: The timer will continue normally but the time displayed "
 #~ "(elapsed time) may be invalid.\n"
-#~ msgstr ""
-#~ "IMPORTANT: le timer va continuer de fonctionner normalement mais le temps "
-#~ "affiché (temps écoulé) risque d'être incorrect.\n"
+#~ msgstr "חשוב: שעון המדידה ימשיך אך הזמן שיוצג (הזמן שנותר) יהיה שגוי\n"
 
 #~ msgid "%s doesn't support given unit (%d)."
-#~ msgstr "%s ne supporte pas l'unité spécifiée (%d)."
+#~ msgstr "%s אינו תומך ביחידה הנתונה (%d)."
 
 #~ msgid "The last number is too big. It has been changed into: %lu"
-#~ msgstr "Le dernier nombre est trop grand. Il a été remplacé par : %lu"
+#~ msgstr "המספר האחרון גדול מדי. הוא שונה ל־:%lu"
 
 #~ msgid "The number before '%s' is too big. It has been changed into: %lu"
-#~ msgstr ""
-#~ "Le nombre situé avant '%s' est trop grand. Il a été remplacé par : %lu"
+#~ msgstr "המספר שלפני '%s' גדול מדי. הוא שונה ל־: %lu"
 
 #~ msgctxt ""
 #~ "NUMDAYS days HOURS:MINUTES:SECONDS:MILLISECONDS (SECONDS.MILLISECONDS "
 #~ "seconds)"
 #~ msgid "%i days %02i:%02i:%02lu.%03lu (%lu.%03lu seconds)"
-#~ msgstr "%i jours %02i:%02i:%02lu.%03lu (%lu.%03lu secondes)"
+#~ msgstr "%i ימים %02i:%02i:%02lu.%03lu (%lu.%03lu שניות)"
 
 #~ msgid "No digits were found\n"
-#~ msgstr "Aucun chiffre n'a été trouvé\n"
+#~ msgstr "לא נמצאו ספרות\n"
 
 #~ msgid "Remaining characters after number: %s\n"
-#~ msgstr "Des caractères sont restants après le nombre: %s\n"
+#~ msgstr "מספר התווים שנותרו לאחר המספר: %s\n"

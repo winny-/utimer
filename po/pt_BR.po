@@ -1,0 +1,202 @@
+# Brazilian Portuguese translation for utimer
+# Copyright (c) 2008 Rosetta Contributors and Canonical Ltd 2008
+# This file is distributed under the same license as the utimer package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2008.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: utimer\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-12-31 12:35-0500\n"
+"PO-Revision-Date: 2008-12-14 22:48+0000\n"
+"Last-Translator: Enrico Nicoletto <liverig@gmail.com>\n"
+"Language-Team: Brazilian Portuguese <pt_BR@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2008-12-30 20:52+0000\n"
+"X-Generator: Launchpad (build Unknown)\n"
+
+#: ../src/utimer.c:70
+msgid "Error during setting current locale. Falling back to default locale."
+msgstr ""
+
+#: ../src/utimer.c:74
+msgid "Couldn't set any locale. Exiting..."
+msgstr ""
+
+#. ------------ Initialization is done ----------
+#. -------------- Options parsing -------------
+#: ../src/utimer.c:101
+msgid "[ARGUMENTS] - "
+msgstr "[ARGUMENTOS] - "
+
+#: ../src/utimer.c:108
+msgid ""
+"\n"
+"Report any bug to: https://bugs.launchpad.net/utimer (bugs@utimer.codealpha."
+"net)"
+msgstr ""
+
+#: ../src/utimer.c:118
+#, c-format
+msgid "Error while parsing options: %s.\n"
+msgstr ""
+
+#: ../src/utimer.c:119 ../src/utimer.c:138
+#, c-format
+msgid "Run '%s --help' to see a full list of available command line options.\n"
+msgstr ""
+
+#: ../src/utimer.c:137
+#, c-format
+msgid "No option has been specified!\n"
+msgstr ""
+
+#: ../src/utimer.c:151
+msgid ""
+"The following options cannot be used simultaneously: -t (timer mode), -c "
+"(countdown mode), -s (stopwatch mode). The Timer mode will  be used by "
+"default."
+msgstr ""
+
+#: ../src/utimer.c:207
+#, c-format
+msgid ""
+"This is a list of the possible limits of µTimer for your machine.\n"
+"\n"
+msgstr ""
+
+#: ../src/utimer.c:211
+#, c-format
+msgid "* Limits for the Timer/Countdown:\n"
+msgstr ""
+
+#: ../src/utimer.c:212
+#, c-format
+msgid "\t- The maximum possible timer length is: %s.\n"
+msgstr ""
+
+#: ../src/utimer.c:213
+#, c-format
+msgid ""
+"\t  If you enter a value that is exceeding it, it will be replaced by the "
+"value above.\n"
+msgstr ""
+
+#: ../src/utimer.c:269
+#, c-format
+msgid "Timer will exit after reaching: %s"
+msgstr ""
+
+#: ../src/utimer.c:313 ../src/timer.c:124
+#, c-format
+msgid "Thread failed: %s"
+msgstr ""
+
+#: ../src/utimer.h:29
+msgid ""
+"command-line \"timer\" which features a timer, a countdown and a stopwatch"
+msgstr ""
+
+#: ../src/utimer.h:32
+msgid ""
+" µTimer (or \"utimer\", pronounced as \"micro-timer\") is a multifunction "
+"timer (command-line only).\n"
+"\n"
+" The main features are:\n"
+"\t- a timer (e.g. count from 0 to 4 minutes),\n"
+"\t- a countdown (e.g. count from 10 minutes down to 0),\n"
+"\t- a stopwatch.\n"
+"\n"
+" µTimer always exits after the timer or countdown are done counting. This "
+"can be useful for using countdowns in scripts, for example. The stopwatch, "
+"which is not concerned, needs to be stopped manually using 'q'."
+msgstr ""
+
+#: ../src/utimer.h:65
+msgid "count from 0 to TIMELENGTH and then exit (e.g. utimer -t 31m27s300ms)."
+msgstr ""
+
+#: ../src/utimer.h:67 ../src/utimer.h:77
+msgid "TIMELENGTH"
+msgstr ""
+
+#: ../src/utimer.h:75
+msgid "count from TIMELENGTH down to 0 and exit (e.g. utimer -c 30d9h50s)."
+msgstr ""
+
+#: ../src/utimer.h:85
+msgid "Verbose output."
+msgstr ""
+
+#: ../src/utimer.h:94
+msgid "Quiet output."
+msgstr ""
+
+#: ../src/utimer.h:103
+msgid ""
+"When hitting 'q' to end the program, exit with a SUCCESS exit status (0)."
+msgstr ""
+
+#: ../src/utimer.h:113
+msgid "Show the limits of µTimer (Maximum time length, Accuracy...)"
+msgstr ""
+
+#: ../src/utimer.h:122
+msgid "Display the current version of µTimer."
+msgstr ""
+
+#: ../src/utimer.h:131
+msgid "Debug output."
+msgstr ""
+
+#: ../src/timer.c:49
+#, c-format
+msgid "\rTime Remaining: %s "
+msgstr ""
+
+#: ../src/timer.c:51
+#, c-format
+msgid "\rElapsed Time: %s "
+msgstr ""
+
+#: ../src/timer.c:164
+#, c-format
+msgid "The last number is too big. It has been changed into: %u"
+msgstr ""
+
+#: ../src/timer.c:166
+#, c-format
+msgid "The number before '%s' is too big. It has been changed into: %u"
+msgstr ""
+
+#: ../src/timer.c:182
+#, c-format
+msgid "Error when trying to parse: %s"
+msgstr ""
+
+#: ../src/timer.c:257
+#, c-format
+msgctxt ""
+"NUMDAYS days HOURS:MINUTES:SECONDS:MILLISECONDS (SECONDS.MILLISECONDS "
+"seconds)"
+msgid "%u days %02u:%02u:%02u.%03u (%u.%03u seconds)"
+msgstr ""
+
+#: ../src/log.c:65
+#, c-format
+msgid "** WARNING: %s\n"
+msgstr ""
+
+#~ msgid "* Limits for the Timer:\n"
+#~ msgstr "* Limites para o Timer:\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Report any bug to: bugs@utimer.codealpha.netor  https://bugs.launchpad."
+#~ "net/utimer"
+#~ msgstr ""
+#~ "\n"
+#~ "Relate quaisquer erros para: bugs@utimer.codealpha.netor  https://bugs."
+#~ "launchpad.net/utimer"

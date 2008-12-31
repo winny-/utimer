@@ -25,7 +25,7 @@ while read FILENAME; do
   mv -f "$FILENAME" "$FILENAME".old     # do not ask questions, because the answers would come from the pipe
   if [ "$?" -eq "0" ]; then
     echo "$FILENAME"
-    msgmerge "$FILENAME".old "$POT_FILENAME" > "$FILENAME"
+    msgmerge -N "$FILENAME".old "$POT_FILENAME" > "$FILENAME"
     if [ "$?" -ne "0" ]; then
       echo "Could not merge \"$FILENAME.old\"."
     fi

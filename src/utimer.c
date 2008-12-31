@@ -115,10 +115,9 @@ int main (int argc, char *argv[])
   
   if (!g_option_context_parse (context, &argc, &argv, &error))
   {
-    g_printerr (_("Error while parsing options: %s.\nRun '%s --help' to see a\
- full list of available command line options.\n"),
-                  error->message,
-                  argv[0]);
+    g_printerr (_("Error while parsing options: %s.\n"),error->message);
+    g_printerr (_("Run '%s --help' to see a full list of available command\
+ line options.\n"), argv[0]);
     g_error_free (error);
     exit (EXIT_FAILURE);
   }
@@ -135,8 +134,9 @@ int main (int argc, char *argv[])
       || ut_config.show_limits
       || ut_config.isCountdown))
   {
-    g_printerr (_("No option specified!\n\nUse \"-t TIMELENGTH\" if you wish to\
- use the the timer.\nTo see the usage help, type: utimer --help\n\n"));
+    g_printerr (_("No option has been specified!\n"));
+    g_printerr (_("Run '%s --help' to see a full list of available command\
+ line options.\n"), argv[0]);
     exit(EXIT_FAILURE);
   }
   
@@ -148,7 +148,7 @@ int main (int argc, char *argv[])
   
   if (ut_config.isTimer && ut_config.isCountdown)
   {
-    g_warning (_("The following options cannot be used with each other:\
+    g_warning (_("The following options cannot be used simultaneously:\
  -t (timer mode), -c (countdown mode), -s (stopwatch mode). The Timer mode will\
   be used by default."));
     g_free (ut_config.isCountdown);
@@ -204,10 +204,11 @@ int main (int argc, char *argv[])
   
   if (ut_config.show_limits)
   {
-    g_print (_("This is a list of the possible limits of µTimer for your machine.\n\n"));
+    g_print (_("This is a list of the possible limits of µTimer for your\
+ machine.\n\n"));
     
     tmp = timer_get_maximum_time ();
-    g_print (_("* Limits for the Timer:\n"));
+    g_print (_("* Limits for the Timer/Countdown:\n"));
     g_print (_("\t- The maximum possible timer length is: %s.\n"), tmp);
     g_print (_("\t  If you enter a value that is exceeding it, it will be\
  replaced by the value above.\n"));
