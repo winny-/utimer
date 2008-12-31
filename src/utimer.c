@@ -53,9 +53,8 @@ int main (int argc, char *argv[])
 
                /* -------------- Initialization ------------- */
   
-  tcgetattr(STDIN_FILENO, &savedttystate); /* saving the tty state */
-  set_tty_canonical(1); /* applying canonical mode */
-
+  tcgetattr(STDIN_FILENO, &savedttystate); /* Save current tty state  */
+  
   exit_status_code = EXIT_SUCCESS;
   g_thread_init (NULL);
   g_type_init ();
@@ -291,7 +290,6 @@ int main (int argc, char *argv[])
   /* ------------- Main loop Exited ---------------- */
   
   g_timer_destroy (start_timer);
-  set_tty_canonical (0);
   g_debug ("Quitting with error code: %i", exit_status_code);
   
         /* ================== MAIN DONE ==================== */
@@ -325,6 +323,7 @@ void set_tty_canonical (int state)
   
   if (state==1)
   {
+    g_debug("Activating canonical mode.");
     tcgetattr(STDIN_FILENO, &ttystate);
     ttystate.c_lflag &= ~ICANON; // remove canonical mode
     ttystate.c_cc[VMIN] = 1; // minimum length to read before sending
@@ -332,8 +331,17 @@ void set_tty_canonical (int state)
   }
   else
   {
+    g_debug("Deactivating canonical mode.");
     tcsetattr (STDIN_FILENO, TCSANOW, &savedttystate); // put canonical mode back
   }
+}
+
+/**
+ * Deactivate the canoncial mode (used with atexit())
+ */
+void reset_tty_canonical_mode ()
+{
+  set_tty_canonical (0);
 }
 
 /**
@@ -381,6 +389,9 @@ void success_quitloop ()
  */
 int check_exit_from_user ()
 {
+  set_tty_canonical (1);             /* Apply canonical mode to TTY*/
+  atexit (reset_tty_canonical_mode); /* Deactivate canonical mode at exit */
+  
   gint c;
   do
   {

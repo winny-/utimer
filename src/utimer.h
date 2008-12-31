@@ -144,6 +144,6 @@ void      quitloop                    (int error_status);
 void      error_quitloop              ();
 void      success_quitloop            ();
 void      set_tty_canonical           (int state);
-
+void      reset_tty_canonical_mode    ();
 
 #endif /* UTIMER_H */
