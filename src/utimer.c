@@ -53,6 +53,9 @@ int main (int argc, char *argv[])
 
                /* -------------- Initialization ------------- */
   
+  tcgetattr(STDIN_FILENO, &savedttystate); /* saving the tty state */
+  set_tty_canonical(1); /* applying canonical mode */
+
   exit_status_code = EXIT_SUCCESS;
   g_thread_init (NULL);
   g_type_init ();
@@ -79,8 +82,6 @@ int main (int argc, char *argv[])
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
   
-  /* Set the canonical mode for the terminal */
-  set_tty_canonical (1);
   
   /* Set the function to call in case of receiving signals:
    * we need to stop the main loop to exit correctly, but
@@ -320,21 +321,18 @@ int start_thread_exit_check ()
 void set_tty_canonical (int state)
 {
   struct termios ttystate;
-
-  tcgetattr (STDIN_FILENO, &savedttystate);
-  tcgetattr (STDIN_FILENO, &ttystate);
-
+  
   if (state==1)
-  {  
+  {
+    tcgetattr(STDIN_FILENO, &ttystate);
     ttystate.c_lflag &= ~ICANON; // remove canonical mode
     ttystate.c_cc[VMIN] = 1; // minimum length to read before sending
+    tcsetattr(STDIN_FILENO, TCSANOW, &ttystate); // apply the changes
   }
-  else if (state==0)
+  else
   {
     tcsetattr (STDIN_FILENO, TCSANOW, &savedttystate); // put canonical mode back
   }
-  
-  tcsetattr (STDIN_FILENO, TCSANOW, &ttystate); // apply the changes
 }
 
 /**
