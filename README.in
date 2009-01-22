@@ -16,23 +16,20 @@ Version Information
 -------------------
 
 Version  :  @PACKAGE_VERSION@
-Codename :  @UTIMER_CODENAME@
 Stability:  @UTIMER_STABILITY@
 
-IMPORTANT: Note that this is an unstable version that doesn't contain all the
-           features that µTimer should be composed of.
-           This version only provides the timer function.
+NOTE: This version doesn't contain the stopwatch feature.
 
 Homepage / Download
 -------------------
 
-Homepage:         http://utimer.codealpha.net
-Launchpad Page:   https://launchpad.net/utimer
-Bug reports:      https://bugs.launchpad.net/utimer
+Homepage	:   http://utimer.codealpha.net
+Launchpad Page	:   https://launchpad.net/utimer
+Bug reports	:   https://bugs.launchpad.net/utimer
 
 To download other releases of µTimer, use one of these download locations:
-  https://launchpad.net/utimer/+download
-  http://utimer.codealpha.net/files/
+  - https://launchpad.net/utimer/+download
+  - http://utimer.codealpha.net/files/
 
 Requirements
 ------------

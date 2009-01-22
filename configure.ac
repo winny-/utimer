@@ -1,4 +1,4 @@
-AC_INIT([utimer], [0.2], [bugs@utimer.codealpha.net])
+AC_INIT([utimer], [0.2~trunk], [bugs@utimer.codealpha.net])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h])
@@ -28,10 +28,7 @@ AM_GLIB_GNU_GETTEXT
 # -- -- --
 
 
-UTIMER_CODENAME='hourglass'
-AC_SUBST(UTIMER_CODENAME)
-
-UTIMER_STABILITY='*UNSTABLE*'
+UTIMER_STABILITY='STABLE'
 AC_SUBST(UTIMER_STABILITY)
 
 AC_CONFIG_FILES([Makefile src/Makefile po/Makefile.in README data/Makefile])
