@@ -1,7 +1,7 @@
 /*
  *  utils.c
  *
- *  Copyright 2008 Arnaud Soyez <weboide@codealpha.net>
+ *  Copyright 2008, 2009  Arnaud Soyez <weboide@codealpha.net>
  *
  *  This file is part of uTimer.
  *  (uTimer is a CLI program that features a timer, countdown, and a stopwatch)

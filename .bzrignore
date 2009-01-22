@@ -26,6 +26,8 @@ aclocal.m4
 *.pot
 README
 utimer-*.tar.gz
+utimer-*.md5sum
+utimer-*.tar.gz.*
 ./po/*.gmo
 ChangeLog
 po/*.po.old

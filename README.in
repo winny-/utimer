@@ -23,9 +23,9 @@ NOTE: This version doesn't contain the stopwatch feature.
 Homepage / Download
 -------------------
 
-Homepage	:   http://utimer.codealpha.net
-Launchpad Page	:   https://launchpad.net/utimer
-Bug reports	:   https://bugs.launchpad.net/utimer
+Homepage  :   http://utimer.codealpha.net
+Launchpad Page  :   https://launchpad.net/utimer
+Bug reports :   https://bugs.launchpad.net/utimer
 
 To download other releases of µTimer, use one of these download locations:
   - https://launchpad.net/utimer/+download
@@ -129,7 +129,7 @@ Countdown:
 Copyright
 ---------
 
-Copyright 2008 Arnaud Soyez <weboide@codealpha.net>
+Copyright 2008, 2009  Arnaud Soyez <weboide@codealpha.net>
 
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 This is free software: you are free to change and redistribute it.
