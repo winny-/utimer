@@ -31,3 +31,4 @@ utimer-*.tar.gz.*
 ./po/*.gmo
 ChangeLog
 po/*.po.old
+./.todo

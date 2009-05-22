@@ -1,4 +1,4 @@
-AM_CPPFLAGS = $(GLIB_CFLAGS)
+AM_CPPFLAGS = $(GLIB_CFLAGS) $(UT_DEBUG_FLAGS)
 
 bin_PROGRAMS = utimer
 utimer_SOURCES = utimer.c utimer.h \

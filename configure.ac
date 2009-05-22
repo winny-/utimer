@@ -24,6 +24,19 @@ fi
 
 AM_GLIB_GNU_GETTEXT
 
+#  -- debug level --
+AC_ARG_ENABLE(debug, [  --enable-debug=[no/minimal/yes]  turn on debugging (default=no)],,enable_debug=no)
+
+AC_MSG_CHECKING([debug level])
+if test "x$enable_debug" = "xyes"; then
+  UT_DEBUG_FLAGS="-DG_ENABLE_DEBUG"
+else
+  if test "x$enable_debug" = "xno"; then
+    UT_DEBUG_FLAGS="-DG_DISABLE_ASSERT -DG_DISABLE_CHECKS"
+  fi
+fi
+AC_SUBST(UT_DEBUG_FLAGS)
+AC_MSG_RESULT($enable_debug)
 
 # -- -- --
 
