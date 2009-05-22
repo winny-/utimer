@@ -1,4 +1,4 @@
-AC_INIT([utimer], [0.2.1~trunk], [bugs@utimer.codealpha.net])
+AC_INIT([utimer], [0.3-trunk], [bugs@utimer.codealpha.net])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h])
@@ -6,9 +6,6 @@ AC_CONFIG_HEADERS([config.h])
 PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.18.2])
 PKG_CHECK_MODULES([GIO], [gio-unix-2.0])
 AC_CHECK_LIB(gthread-2.0, g_thread_init)
-#PKG_CHECK_MODULES([GOBJECT], [ glib-2.0 gobject-2.0 ])
-
-
 
 # -- i18n --
 
@@ -40,11 +37,6 @@ AC_MSG_RESULT($enable_debug)
 
 # -- -- --
 
-
-UTIMER_STABILITY='STABLE'
-AC_SUBST(UTIMER_STABILITY)
-
 AC_CONFIG_FILES([Makefile src/Makefile po/Makefile.in README data/Makefile])
-
 
 AC_OUTPUT

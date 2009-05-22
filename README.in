@@ -15,10 +15,9 @@ It provides:
 Version Information
 -------------------
 
-Version  :  @PACKAGE_VERSION@
-Stability:  @UTIMER_STABILITY@
+Version:  @PACKAGE_VERSION@
 
-NOTE: This version doesn't contain the stopwatch feature.
+This version doesn't contain the stopwatch feature.
 
 Homepage / Download
 -------------------
