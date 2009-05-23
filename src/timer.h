@@ -41,18 +41,21 @@ typedef struct
   void          (*error_callback)();
   guint         timer_print_source_id;
   gboolean      isCountdown;
+  gboolean      checkloop_thread_stop_with_error;
 } ut_timer;
 
 gboolean              timer_print               (ut_timer *t);
 gboolean              timer_check               (ut_timer *t);
-int                   timer_run_checkloop_thread(ut_timer *t);
+gboolean              timer_stop_checkloop_thread(ut_timer *t);
+gboolean              timer_run_checkloop_thread(ut_timer *t);
 gboolean              parse_time_pattern        (gchar *pattern, ut_timer* timer);
 void                  timer_add_seconds         (ut_timer* timer, guint seconds);
 void                  timer_add_milliseconds    (ut_timer* timer, guint milliseconds);
 GTimeVal              gtvaldiff_to_gtval        (GTimeValDiff g);
 gchar*                timer_sec_msec_to_string  (guint sec, guint msec);
 gchar*                timer_get_maximum_time    ();
-gchar*                timer_ut_timer_to_string  (ut_timer g);
+gchar* timer_ut_timer_to_string(ut_timer *g);
 gchar*                timer_gtvaldiff_to_string (GTimeValDiff g);
-void                  countdown_init            (ut_timer* t);
+ut_timer* timer_new_timer ();
+ut_timer* countdown_new_timer ();
 #endif /* TIMER_H */

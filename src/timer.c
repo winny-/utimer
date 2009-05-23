@@ -34,7 +34,6 @@
 #include "utimer.h"
 #include "timer.h"
 
-
 static GTimeValDiff timer_get_diff (GTimer *start)
 {
   GTimeValDiff diff;
@@ -138,7 +137,7 @@ gboolean timer_check_loop (ut_timer *t)
   
   g_assert (TIMER_CHECK_RATE_MSEC < 1000);
   
-  while (TRUE)
+  while (!t->checkloop_thread_stop_with_error)
   {
     elapsed = timer_get_diff (t->start_timer);
     
@@ -178,7 +177,7 @@ gboolean timer_check_loop (ut_timer *t)
       }
       else
       {
-        g_debug ("sleeping normal: %u us", TIMER_CHECK_RATE_MSEC*1000);
+        g_debug ("sleeping for normal rate: %u us", TIMER_CHECK_RATE_MSEC*1000);
         g_usleep(TIMER_CHECK_RATE_MSEC*1000); /* otherwise we sleep another 'rate' */
       }
     }
@@ -187,20 +186,44 @@ gboolean timer_check_loop (ut_timer *t)
   }
   
   /* Time's up! request to stop updating, and returns */
-  g_source_remove(t->timer_print_source_id);
+  g_source_remove (t->timer_print_source_id);
   timer_print(t);
+  
+  if (t->checkloop_thread_stop_with_error) /* if we quitted the loop with an error */
+  {
+    g_debug ("%s: thread stopped with error", __FUNCTION__);
+    t->error_callback();
+    return FALSE;
+  }
+  
+  g_debug ("%s: thread stopped with success", __FUNCTION__);
   t->success_callback();
   return TRUE;
 }
 
-int timer_run_checkloop_thread (ut_timer *t)
+
+gboolean timer_stop_checkloop_thread (ut_timer *t)
+{
+  if (!t)
+    return FALSE;
+  g_debug ("%s: request to stop checkloop thread", __FUNCTION__);
+  g_debug ("%s: checkloop_thread_stop_with_error = %d", __FUNCTION__, t->checkloop_thread_stop_with_error);
+  t->checkloop_thread_stop_with_error = TRUE;
+  g_debug ("%s: checkloop_thread_stop_with_error = %d", __FUNCTION__, t->checkloop_thread_stop_with_error);
+  return TRUE;
+}
+
+gboolean timer_run_checkloop_thread (ut_timer *t)
 {
   GError  *error = NULL;
   
   g_debug("Starting Timer thread");
+  
   if (!g_thread_create((GThreadFunc) timer_check_loop, t, FALSE, &error))
   {
-    g_error (_("Thread failed: %s"), error->message);
+    g_printerr (_("Thread failed: %s"), error->message);
+    g_error_free (error);
+    error_quitloop ();
   }
   
   return FALSE; // return FALSE to get removed from the main loop
@@ -208,11 +231,14 @@ int timer_run_checkloop_thread (ut_timer *t)
 
 gchar* timer_get_maximum_time()
 {
-  ut_timer t;
-  t.seconds = G_MAXUINT;
-  t.mseconds = 999;
+  ut_timer *t = g_new (ut_timer, 1);
+  gchar* ret;
+  t->seconds = G_MAXUINT;
+  t->mseconds = 999;
   
-  return timer_ut_timer_to_string(t);
+  ret = timer_ut_timer_to_string(t);
+  g_free (t);
+  return ret;
 }
 
 gboolean parse_time_pattern (gchar *pattern, ut_timer* timer)
@@ -319,21 +345,30 @@ gchar* timer_gtvaldiff_to_string(GTimeValDiff g)
   return timer_sec_msec_to_string(g.tv_sec, g.tv_usec/1000);
 }
 
-gchar* timer_ut_timer_to_string(ut_timer g)
+gchar* timer_ut_timer_to_string(ut_timer *g)
 {
-  return timer_sec_msec_to_string(g.seconds, g.mseconds);
+  if (!g)
+    return NULL;
+  return timer_sec_msec_to_string(g->seconds, g->mseconds);
 }
 
-void timer_init(ut_timer* t)
+ut_timer* timer_new_timer ()
 {
+  ut_timer* t;
+  t = g_new (ut_timer, 1);
   t->seconds = 0;
   t->mseconds = 0;
   t->isCountdown = FALSE;
+  t->checkloop_thread_stop_with_error = FALSE;
+  return t;
 }
 
-void countdown_init (ut_timer* t)
+ut_timer* countdown_new_timer ()
 {
+  ut_timer* t;
+  t = g_new (ut_timer, 1);
   t->seconds = 0;
   t->mseconds = 0;
   t->isCountdown = TRUE;
+  return t;
 }

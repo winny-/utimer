@@ -25,6 +25,9 @@
 #define UTIMER_H
 
 #include "ut_config.h"
+#include "utils.h"
+#include "timer.h"
+#include "log.h"
 
 #define SHORTDESCRIPTION _("command-line \"timer\" which features a timer,\
  a countdown and a stopwatch")
@@ -52,13 +55,14 @@
 #define TIMER_PRINT_RATE_MSEC  79
 #define TIMER_CHECK_RATE_MSEC  500
 
-void      quitloop                    ();
-int       start_thread_exit_check     ();
+ut_timer        *ttimer;
+
+gboolean       start_thread_exit_check     ();
 int       check_exit_from_user        ();
 void      quitloop                    (int error_status);
 void      error_quitloop              ();
 void      success_quitloop            ();
 void      set_tty_canonical           (int state);
 void      reset_tty_canonical_mode    ();
-
+void clean_up (void);
 #endif /* UTIMER_H */

@@ -1,4 +1,4 @@
-.TH "UTIMER" "1" "January 21, 2009" "" "uTimer"
+.TH "UTIMER" "1" "May 23, 2009" "" "uTimer"
 .SH "NAME"
 \fButimer\fP \- command\-line "timer" tool which features a timer, a countdown and a stopwatch.
 
@@ -109,12 +109,6 @@ for seconds,
 .B ms
 for milliseconds.
 
-
-
-Also you can stop/quit the timer whenever by using the 'q' key, note that the program will exit with a error exit status code (1) (you can bypass this behaviour by using the
-.B --quit-with-success
-option).
-
 .B
 .IP Countdown:
 
@@ -127,6 +121,24 @@ See the Timer usage to know how to write a valid TIMELENGTH.
 .B
 .IP Stopwatch:
 Not available in this version.
+
+.SH SHORTCUT KEYS
+
+.B
+.IP 'Q':
+
+
+You can stop/quit the timer whenever by using the 'Q' key, note that the program will exit with a error exit status code (1) (you can bypass this behaviour by using the
+.B --quit-with-success
+option, see the
+.B EXIT_STATUS
+section above).
+
+.B
+.IP SPACEBAR:
+
+You can pause the timer anytime using the spacebar key. To resume, just hit the spacebar again.
+
 .SH EXIT STATUS
 After the timer or the countdown are done, the program exits with a success exit status code (0). But when you quit during the timer/countdown is counting using 'q', it exits with an error exit status code (1). You can change this behaviour using the 
 .B --quit-with-success
@@ -150,7 +162,7 @@ runs the countdown for 1 minute, 48 seconds and 500 milliseconds.
 .B utimer \--countdown=2d5m
 runs the countdown for 2 days plus 5 minutes.
 .SH "ACCURACY"
-The timer can be accurate enough for most common uses, and we cannot give any warranty on its accuracy. This is due to the time needed to start and to exit the program. On our test machines, it's as low as 5 ms.
+The timer can be accurate enough for most common uses, and we cannot give any warranty on its accuracy. This is due to the time needed to start and to exit the program. On our test machines, it's as low as 5 milliseconds.
 .SH "BUGS"
 If you find any bug using µTimer, please report it to:
 

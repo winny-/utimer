@@ -34,16 +34,16 @@
 #include <glib/gi18n-lib.h>
 
 
-#include "utils.h"
+
 #include "utimer.h"
-#include "timer.h"
-#include "log.h"
 
 static    GMainLoop       *loop;
 
 //~ static    char            **remaining_args;
 struct    termios         savedttystate;
 static    int             exit_status_code;
+static    gboolean        paused;
+GTimer          *start_timer;
 
 static GOptionEntry entries[] = {
   
@@ -134,9 +134,7 @@ int main (int argc, char *argv[])
   GOptionContext  *context;
   gchar           *tmp = NULL;
   gint            i;
-  ut_timer        ttimer;
   gchar           *options_help;
-
                /* -------------- Initialization ------------- */
   
   tcgetattr(STDIN_FILENO, &savedttystate); /* Save current tty state  */
@@ -145,8 +143,11 @@ int main (int argc, char *argv[])
   g_thread_init (NULL);
   g_type_init ();
   
+  /* We cleanup at ext */
+  atexit (clean_up);
+  
   // Initiate the timer
-  GTimer *start_timer =  g_timer_new ();
+  start_timer =  g_timer_new ();
   
   /* Define localization */
   ut_config.locale = setlocale (LC_ALL, "");
@@ -327,12 +328,12 @@ int main (int argc, char *argv[])
     if(ut_config.isCountdown)
     {
       g_debug ("Countdown Mode");
-      countdown_init (&ttimer);
+      ttimer = countdown_new_timer ();
     }
     else
     {
       g_debug ("Timer Mode");
-      timer_init (&ttimer);
+      ttimer = timer_new_timer ();
     }
     
     tmp = timer_get_maximum_time ();
@@ -341,25 +342,25 @@ int main (int argc, char *argv[])
     tmp = NULL;
     
     /* Bind some callback functions */
-    ttimer.success_callback = success_quitloop;
-    ttimer.error_callback   = error_quitloop;
-    ttimer.start_timer      = start_timer; /* bind the GTimer too */
+    ttimer->success_callback = success_quitloop;
+    ttimer->error_callback   = error_quitloop;
+    ttimer->start_timer      = start_timer; /* bind the GTimer too */
     
     /* Parse the user-given time length */
     if (ut_config.isCountdown)
-      parse_time_pattern (ut_config.isCountdown, &ttimer);
+      parse_time_pattern (ut_config.isCountdown, ttimer);
     else
-      parse_time_pattern (ut_config.isTimer, &ttimer);
+      parse_time_pattern (ut_config.isTimer, ttimer);
     
     tmp = timer_ut_timer_to_string (ttimer);
     g_info (_("Timer will exit after reaching: %s"), tmp);
     g_free (tmp);
     tmp = NULL;
     
-    ttimer.timer_print_source_id = g_timeout_add (TIMER_PRINT_RATE_MSEC,
+    ttimer->timer_print_source_id = g_timeout_add (TIMER_PRINT_RATE_MSEC,
                                         (GSourceFunc) timer_print,
-                                        &ttimer);
-    g_idle_add ((GSourceFunc) timer_run_checkloop_thread, &ttimer);
+                                        ttimer);
+    g_idle_add ((GSourceFunc) timer_run_checkloop_thread, ttimer);
   } /* -------------- END TIMER&COUNTDOWN MODE -------------- */
   else
   { /* No mode selected! We quit the loop ASAP. */
@@ -375,7 +376,6 @@ int main (int argc, char *argv[])
   
   /* ------------- Main loop Exited ---------------- */
   
-  g_timer_destroy (start_timer);
   g_debug ("Quitting with error code: %i", exit_status_code);
   
         /* ================== MAIN DONE ==================== */
@@ -387,14 +387,16 @@ int main (int argc, char *argv[])
  * Used to start the function check_exit_from_user that is used to check
  * if the user wants to end the program.
  */
-int start_thread_exit_check ()
+gboolean start_thread_exit_check ()
 {
   GError  *error = NULL;
   
-  g_debug("Starting thread exit check");
+  g_debug ("Starting thread exit check");
   if (!g_thread_create ((GThreadFunc) check_exit_from_user, NULL, FALSE, &error))
   {
-    g_error (_("Thread failed: %s"), error->message);
+    g_printerr (_("Thread creation failed: %s"), error->message);
+    g_error_free (error);
+    timer_stop_checkloop_thread (ttimer);
   }
   
   return FALSE; // to get removed from the main loop
@@ -443,6 +445,8 @@ void quitloop (int error_status)
   // We set the exit status code
   exit_status_code = error_status;
   g_main_loop_quit (loop);
+  g_main_loop_unref (loop);
+  loop = NULL;
 }
 
 /**
@@ -483,8 +487,46 @@ int check_exit_from_user ()
   {
     c = fgetc (stdin);
     g_print ("\b ");
+    switch (c)
+    {
+      case ' ':
+      {
+        if (paused)
+        {
+          g_timer_continue (start_timer);
+          paused = FALSE;
+        }
+        else
+        {
+          g_timer_stop (start_timer);
+          paused = TRUE;
+        }
+      }
+      
+    }
   } while (c != 'q'); /* checks for 'q' key */
   
   /* If the user asks for exiting, we stop the loop. */
   quitloop ( (ut_config.quit_with_success ? EXIT_SUCCESS : EXIT_FAILURE) );
+}
+
+void clean_up (void)
+{
+  if (ttimer)
+  {
+    g_free (ttimer);
+    ttimer = NULL;
+  }
+  
+  if (start_timer)
+  {
+    g_timer_destroy (start_timer);
+    start_timer = NULL;
+  }
+  
+  if (ut_config.locale)
+  {
+    g_free (ut_config.locale);
+    ut_config.locale = NULL;
+  }
 }
