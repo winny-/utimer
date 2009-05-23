@@ -31,9 +31,84 @@
 #include <glib.h>
 #include <glib/gi18n-lib.h>
 
+#include "utimer.h"
 #include "timer.h"
 
-gboolean timer_update (ut_timer *t)
+
+static GTimeValDiff timer_get_diff (GTimer *start)
+{
+  GTimeValDiff diff;
+  gulong tmpul;
+  
+  diff.tv_sec = g_timer_elapsed(start, &tmpul);
+  diff.tv_usec = (guint) tmpul;
+  
+  g_debug("timer_get_diff: %u.%06u", diff.tv_sec, diff.tv_usec);
+  return diff;
+}
+
+static gboolean timer_apply_suffix (guint* value, gchar* suffix)
+{
+  int factor;
+
+  switch (*suffix)
+  {
+    case 0:
+    case 's':
+      factor = 1;
+      break;
+    case 'm':
+      factor = 60;
+      break;
+    case 'h':
+      factor = 60 * 60;
+      break;
+    case 'd':
+      factor = 60 * 60 * 24;
+      break;
+    default:
+      return FALSE;
+  }
+  
+  g_debug("applying factor %d to %u", factor, *value);
+  (*value) = ul_mul(*value, factor);
+
+  return TRUE;
+}
+
+static GTimeValDiff countdown_get_diff (ut_timer *t)
+{
+  GTimeValDiff diff;
+  gulong tmpul;
+  
+  /* diff = elapsed time */
+  diff.tv_sec = g_timer_elapsed(t->start_timer, &tmpul);
+  diff.tv_usec = tmpul;
+  
+  /* ------- We need: diff = given time - elapsed time ------- */
+  
+  diff.tv_sec = t->seconds - diff.tv_sec;
+  
+  /* If there are more than one second, and usec < tv_usec */
+  if(diff.tv_sec > 0 && t->mseconds*1000 < diff.tv_usec)
+  {
+    diff.tv_sec--;
+    diff.tv_usec = 1000000-(diff.tv_usec - t->mseconds*1000);
+  }
+  else if(t->mseconds*1000 >= diff.tv_usec) /* usec >= tv_usec, normal substraction */
+  {
+    diff.tv_usec = t->mseconds*1000 - diff.tv_usec;
+  }
+  else /* if 0 seconds and usec < tv_usec, we are already late! */
+  {
+    diff.tv_usec = 0;
+  }
+  
+  g_debug("countdown_get_diff: %u.%06u", diff.tv_sec, diff.tv_usec);
+  return diff;
+}
+
+gboolean timer_print (ut_timer *t)
 {
   GTimeValDiff delta;
   gchar* tmpchar;
@@ -55,71 +130,75 @@ gboolean timer_update (ut_timer *t)
   return TRUE;
 }
 
-gboolean timer_sleep (ut_timer *t)
+gboolean timer_check_loop (ut_timer *t)
 {
-  GTimeValDiff delta;
-  guint usec = t->mseconds*1000;
-  guint sec  = t->seconds;
+  GTimeValDiff elapsed;
+  guint wanted_usec = t->mseconds*1000;
+  guint wanted_sec  = t->seconds;
   
-  /* Get the time that's already elapsed, and substracts it to how long we need
-   * to sleep.
-   */
+  g_assert (TIMER_CHECK_RATE_MSEC < 1000);
   
-  delta = timer_get_diff(t->start_timer);
-  sec -= delta.tv_sec;
-  
-  /* If there are more than one second, and usec < tv_usec */
-  if(sec > 0 && usec < delta.tv_usec)
+  while (TRUE)
   {
-    sec--;
-    usec = 1000000-(delta.tv_usec-usec);
+    elapsed = timer_get_diff (t->start_timer);
+    
+    if (elapsed.tv_sec < wanted_sec || elapsed.tv_sec == wanted_sec && elapsed.tv_usec < wanted_usec)
+    {
+      
+      guint remaining_sec = wanted_sec - elapsed.tv_sec;
+      guint remaining_usec = 0;
+      
+      /* -If- more than 1 second remaining, and elapsed.usec > wanted_usec */
+      if(remaining_sec >= 1 && elapsed.tv_usec > wanted_usec)
+      {
+        /* (wanted_usec - elapsed.tv_usec)  would be negative,
+         * so we need to do this (this is like a decomposed substraction):
+         */
+        remaining_sec--;
+        remaining_usec = 1000000 - (elapsed.tv_usec - wanted_usec);
+      }
+      else if(wanted_usec >= elapsed.tv_usec) 
+      {
+        /* -If- wanted_usec >= elapsed.usec, normal substraction
+         * (we explicetly don't care about remaining_sec)
+         */
+        
+        remaining_usec = wanted_usec - elapsed.tv_usec;
+      }
+      else /* if 0 seconds and usec < tv_usec, we are already late! */
+      {
+        remaining_usec = 0;
+      }
+      
+      /* if less than a second is remaining and rate is too big */
+      if (remaining_sec == 0 && TIMER_CHECK_RATE_MSEC*1000 > remaining_usec)
+      {
+        g_debug ("sleeping for remaining: %u us (< %u us)", remaining_usec, TIMER_CHECK_RATE_MSEC*1000);
+        g_usleep(remaining_usec); /* we sleep for the remaining part */
+      }
+      else
+      {
+        g_debug ("sleeping normal: %u us", TIMER_CHECK_RATE_MSEC*1000);
+        g_usleep(TIMER_CHECK_RATE_MSEC*1000); /* otherwise we sleep another 'rate' */
+      }
+    }
+    else
+      break;
   }
-  else if(usec >= delta.tv_usec) /* usec >= tv_usec, normal substraction */
-  {
-    usec -= delta.tv_usec;
-  }
-  else /* if 0 seconds and usec < tv_usec, we are already late! */
-  {
-    usec = 0;
-  }
   
-  g_debug("sleeping for %u.%06u seconds", sec, usec);
-  g_message("\n");
-  timer_update(t);
-  
-  /* Main Sleep */
-  
-  if(sec>0)
-    sleep(sec);
-  
-  if(usec>0)
-    g_usleep(usec);
-  
-  /* Sleeping is done, request to stop updating, and returns */
-  g_source_remove(t->update_timer_safe_source_id);
-  timer_update(t);
+  /* Time's up! request to stop updating, and returns */
+  g_source_remove(t->timer_print_source_id);
+  timer_print(t);
   t->success_callback();
   return TRUE;
 }
 
-static GTimeValDiff timer_get_diff (GTimer *start)
-{
-  GTimeValDiff diff;
-  gulong tmpul;
-  
-  diff.tv_sec = g_timer_elapsed(start, &tmpul);
-  diff.tv_usec = (guint) tmpul;
-  
-  g_debug("timer_get_diff: %u.%06u", diff.tv_sec, diff.tv_usec);
-  return diff;
-}
-
-int timer_start_thread (ut_timer *t)
+int timer_run_checkloop_thread (ut_timer *t)
 {
   GError  *error = NULL;
   
   g_debug("Starting Timer thread");
-  if (!g_thread_create((GThreadFunc) timer_sleep, t, FALSE, &error))
+  if (!g_thread_create((GThreadFunc) timer_check_loop, t, FALSE, &error))
   {
     g_error (_("Thread failed: %s"), error->message);
   }
@@ -210,35 +289,6 @@ void timer_add_milliseconds(ut_timer* timer, guint milliseconds)
   timer->mseconds = ui_add(timer->mseconds, milliseconds);
 }
 
-static gboolean timer_apply_suffix (guint* value, gchar* suffix)
-{
-  int factor;
-
-  switch (*suffix)
-  {
-    case 0:
-    case 's':
-      factor = 1;
-      break;
-    case 'm':
-      factor = 60;
-      break;
-    case 'h':
-      factor = 60 * 60;
-      break;
-    case 'd':
-      factor = 60 * 60 * 24;
-      break;
-    default:
-      return FALSE;
-  }
-  
-  g_debug("applying factor %d to %u", factor, *value);
-  (*value) = ul_mul(*value, factor);
-
-  return TRUE;
-}
-
 /**
  * Return human readable string for the given time.
  */
@@ -286,36 +336,4 @@ void countdown_init (ut_timer* t)
   t->seconds = 0;
   t->mseconds = 0;
   t->isCountdown = TRUE;
-}
-
-static GTimeValDiff countdown_get_diff (ut_timer *t)
-{
-  GTimeValDiff diff;
-  gulong tmpul;
-  
-  /* diff = elapsed time */
-  diff.tv_sec = g_timer_elapsed(t->start_timer, &tmpul);
-  diff.tv_usec = tmpul;
-  
-  /* ------- We need: diff = given time - elapsed time ------- */
-  
-  diff.tv_sec = t->seconds - diff.tv_sec;
-  
-  /* If there are more than one second, and usec < tv_usec */
-  if(diff.tv_sec > 0 && t->mseconds*1000 < diff.tv_usec)
-  {
-    diff.tv_sec--;
-    diff.tv_usec = 1000000-(diff.tv_usec - t->mseconds*1000);
-  }
-  else if(t->mseconds*1000 >= diff.tv_usec) /* usec >= tv_usec, normal substraction */
-  {
-    diff.tv_usec = t->mseconds*1000 - diff.tv_usec;
-  }
-  else /* if 0 seconds and usec < tv_usec, we are already late! */
-  {
-    diff.tv_usec = 0;
-  }
-  
-  g_debug("countdown_get_diff: %u.%06u", diff.tv_sec, diff.tv_usec);
-  return diff;
 }

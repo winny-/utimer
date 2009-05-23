@@ -24,8 +24,6 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#define TIMER_REFRESH_RATE  100
-
 #include "utils.h"
 
 typedef struct {
@@ -41,28 +39,20 @@ typedef struct
   guint         mseconds;
   void          (*success_callback)();
   void          (*error_callback)();
-  guint         update_timer_safe_source_id;
+  guint         timer_print_source_id;
   gboolean      isCountdown;
 } ut_timer;
 
-gboolean      timer_update              (ut_timer *t);
-gboolean      timer_sleep               (ut_timer *t);
-int           timer_start_thread        (ut_timer *t);
-gboolean      parse_time_pattern        (gchar *pattern, ut_timer* timer);
-void          timer_add_seconds         (ut_timer* timer, guint seconds);
-void          timer_add_milliseconds    (ut_timer* timer, guint milliseconds);
-GTimeVal      gtvaldiff_to_gtval        (GTimeValDiff g);
-gchar*        timer_sec_msec_to_string  (guint sec, guint msec);
-gchar*        timer_get_maximum_time    ();
-gchar*        timer_ut_timer_to_string  (ut_timer g);
-gchar*        timer_gtvaldiff_to_string (GTimeValDiff g);
-
-static 
-gboolean      timer_apply_suffix        (guint* value, gchar* suffix);
-
-static
-GTimeValDiff  timer_get_diff            (GTimer *start);
-
-void countdown_init (ut_timer* t);
-static GTimeValDiff countdown_get_diff (ut_timer *t);
+gboolean              timer_print               (ut_timer *t);
+gboolean              timer_check               (ut_timer *t);
+int                   timer_run_checkloop_thread(ut_timer *t);
+gboolean              parse_time_pattern        (gchar *pattern, ut_timer* timer);
+void                  timer_add_seconds         (ut_timer* timer, guint seconds);
+void                  timer_add_milliseconds    (ut_timer* timer, guint milliseconds);
+GTimeVal              gtvaldiff_to_gtval        (GTimeValDiff g);
+gchar*                timer_sec_msec_to_string  (guint sec, guint msec);
+gchar*                timer_get_maximum_time    ();
+gchar*                timer_ut_timer_to_string  (ut_timer g);
+gchar*                timer_gtvaldiff_to_string (GTimeValDiff g);
+void                  countdown_init            (ut_timer* t);
 #endif /* TIMER_H */

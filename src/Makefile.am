@@ -9,3 +9,4 @@ utimer_SOURCES = utimer.c utimer.h \
 
 utimer_LDADD = $(GLIB_LIBS) $(GIO_LIBS)
 
+CLEANFILES = *~

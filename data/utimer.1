@@ -150,9 +150,7 @@ runs the countdown for 1 minute, 48 seconds and 500 milliseconds.
 .B utimer \--countdown=2d5m
 runs the countdown for 2 days plus 5 minutes.
 .SH "ACCURACY"
-The timer can be accurate enough for most common uses but don't expect it to have a better accuracy than 5 ms because it highly depends on your machine. You can expect an accuracy that is under 100 ms for sure. On our test machines, it doesn't go over 20 ms.
-
-Note that µtimer tries to substract the time needed to start the program to the given timelength to increase accuracy.
+The timer can be accurate enough for most common uses, and we cannot give any warranty on its accuracy. This is due to the time needed to start and to exit the program. On our test machines, it's as low as 5 ms.
 .SH "BUGS"
 If you find any bug using µTimer, please report it to:
 

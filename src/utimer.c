@@ -39,9 +39,95 @@
 #include "timer.h"
 #include "log.h"
 
-/**
- * Function main()
- */
+static    GMainLoop       *loop;
+
+//~ static    char            **remaining_args;
+struct    termios         savedttystate;
+static    int             exit_status_code;
+
+static GOptionEntry entries[] = {
+  
+  {"timer",
+    't',
+    0,
+    G_OPTION_ARG_STRING,
+    &(ut_config.isTimer),
+    N_("count from 0 to TIMELENGTH and then exit\
+ (e.g. utimer -t 31m27s300ms)."),
+    N_("TIMELENGTH")
+  },
+  
+  {"countdown",
+    'c',
+    0,
+    G_OPTION_ARG_STRING,
+    &(ut_config.isCountdown),
+    N_("count from TIMELENGTH down to 0 and exit (e.g.\
+ utimer -c 30d9h50s)."),
+    N_("TIMELENGTH")
+  },
+  
+  {"verbose",
+    'v',
+    0,
+    G_OPTION_ARG_NONE,
+    &(ut_config.verbose),
+    N_("Verbose output."),
+    NULL
+  },
+  
+  {"quiet",
+    'q',
+    0,
+    G_OPTION_ARG_NONE,
+    &(ut_config.quiet),
+    N_("Quiet output."),
+    NULL
+  },
+  
+  {"quit-with-success",
+    '\0',
+    0,
+    G_OPTION_ARG_NONE,
+    &(ut_config.quit_with_success), 
+    N_("When hitting 'q' to end the program, exit with a SUCCESS exit\
+ status (0)."),
+    NULL
+  },
+
+  {"limits",
+    'L',
+    0,
+    G_OPTION_ARG_NONE,
+    &(ut_config.show_limits),
+    N_("Show the limits of µTimer (Maximum time length, Accuracy...)"),
+    NULL
+  },
+  
+  {"version",
+    '\0',
+    0,
+    G_OPTION_ARG_NONE,
+    &(ut_config.show_version),
+    N_("Display the current version of µTimer."),
+    NULL
+  },
+  
+  {"debug",
+    'd',
+    0,
+    G_OPTION_ARG_NONE,
+    &(ut_config.debug),
+    N_("Debug output."),
+    NULL
+  },
+
+  //~ {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args,
+    //~ NULL, NULL },
+  {NULL}
+};
+
+
 int main (int argc, char *argv[])
 {        /* ================== MAIN STARTS ==================== */
   GError          *error = NULL;
@@ -171,7 +257,7 @@ int main (int argc, char *argv[])
   else
     g_debug ("You are not using a TTY.");
   
-  if (ut_config.verbose)
+  if (ut_config.verbose || ut_config.debug)
   {
     g_debug ("Deactivating buffered output for stderr and stdout...");
     
@@ -237,6 +323,7 @@ int main (int argc, char *argv[])
   /* -------------- TIMER&COUNTDOWN MODE -------------- */
   if(ut_config.isTimer || ut_config.isCountdown)
   {
+    
     if(ut_config.isCountdown)
     {
       g_debug ("Countdown Mode");
@@ -269,11 +356,10 @@ int main (int argc, char *argv[])
     g_free (tmp);
     tmp = NULL;
     
-    ttimer.update_timer_safe_source_id = g_timeout_add (TIMER_REFRESH_RATE,
-                                        (GSourceFunc) timer_update,
+    ttimer.timer_print_source_id = g_timeout_add (TIMER_PRINT_RATE_MSEC,
+                                        (GSourceFunc) timer_print,
                                         &ttimer);
-    g_idle_add ((GSourceFunc) timer_start_thread, &ttimer);
-    
+    g_idle_add ((GSourceFunc) timer_run_checkloop_thread, &ttimer);
   } /* -------------- END TIMER&COUNTDOWN MODE -------------- */
   else
   { /* No mode selected! We quit the loop ASAP. */
@@ -397,7 +483,7 @@ int check_exit_from_user ()
   {
     c = fgetc (stdin);
     g_print ("\b ");
-  } while (c != 'q' || c == 27); /* checks for 'q' key or Escape */
+  } while (c != 'q'); /* checks for 'q' key */
   
   /* If the user asks for exiting, we stop the loop. */
   quitloop ( (ut_config.quit_with_success ? EXIT_SUCCESS : EXIT_FAILURE) );
