@@ -147,7 +147,7 @@ int main (int argc, char *argv[])
   atexit (clean_up);
   
   // Initiate the timer
-  start_timer =  g_timer_new ();
+  start_timer = g_timer_new ();
   
   /* Define localization */
   ut_config.locale = setlocale (LC_ALL, "");
@@ -223,7 +223,7 @@ int main (int argc, char *argv[])
     g_printerr (_("No option has been specified!\n"));
     g_printerr (_("Run '%s --help' to see a full list of available command\
  line options.\n"), argv[0]);
-    exit(EXIT_FAILURE);
+    exit (EXIT_FAILURE);
   }
   
   
@@ -268,19 +268,19 @@ int main (int argc, char *argv[])
   
   /* Check for arguments */
   /* NO NEED FOR NOW */
-  //~ if(remaining_args != NULL)
+  //~ if (remaining_args != NULL)
   //~ {
-    //~ g_debug("Checking arguments...");
+    //~ g_debug ("Checking arguments...");
     //~ i = 0;
-    //~ while(tmp = remaining_args[i])
+    //~ while (tmp = remaining_args[i])
     //~ {
-      //~ g_message("argument: %s", tmp);
+      //~ g_message ("argument: %s", tmp);
       //~ i++;
     //~ }
   //~ }
   //~ else
   //~ {
-    //~ g_message(_("No argument found."));
+    //~ g_message (_("No argument found."));
   //~ }
   
   /* Now that we treated every arg, we can free remaining_args. */
@@ -307,10 +307,10 @@ int main (int argc, char *argv[])
   
   /* Showing version */
   
-  if(ut_config.show_version)
+  if (ut_config.show_version)
   {
-    g_print("%s\n\n%s\n\n%s\n", PACKAGE_STRING, COPYRIGHT, COPYRIGHT_TXT);
-    exit(EXIT_SUCCESS);
+    g_print ("%s\n\n%s\n\n%s\n", PACKAGE_STRING, COPYRIGHT, COPYRIGHT_TXT);
+    exit (EXIT_SUCCESS);
   }
   
         /* ------------------ PROCESSING STARTS ------------------ */
@@ -319,13 +319,13 @@ int main (int argc, char *argv[])
   
   loop = g_main_loop_new (NULL, FALSE);
   
-  g_idle_add((GSourceFunc) start_thread_exit_check, NULL);
+  g_idle_add ((GSourceFunc) start_thread_exit_check, NULL);
   
   /* -------------- TIMER&COUNTDOWN MODE -------------- */
-  if(ut_config.isTimer || ut_config.isCountdown)
+  if (ut_config.isTimer || ut_config.isCountdown)
   {
     
-    if(ut_config.isCountdown)
+    if (ut_config.isCountdown)
     {
       g_debug ("Countdown Mode");
       ttimer = countdown_new_timer ();
@@ -358,8 +358,8 @@ int main (int argc, char *argv[])
     tmp = NULL;
     
     ttimer->timer_print_source_id = g_timeout_add (TIMER_PRINT_RATE_MSEC,
-                                        (GSourceFunc) timer_print,
-                                        ttimer);
+                                                   (GSourceFunc) timer_print,
+                                                   ttimer);
     g_idle_add ((GSourceFunc) timer_run_checkloop_thread, ttimer);
   } /* -------------- END TIMER&COUNTDOWN MODE -------------- */
   else
@@ -411,15 +411,15 @@ void set_tty_canonical (int state)
   
   if (state==1)
   {
-    g_debug("Activating canonical mode.");
-    tcgetattr(STDIN_FILENO, &ttystate);
+    g_debug ("Activating canonical mode.");
+    tcgetattr (STDIN_FILENO, &ttystate);
     ttystate.c_lflag &= ~ICANON; // remove canonical mode
     ttystate.c_cc[VMIN] = 1; // minimum length to read before sending
-    tcsetattr(STDIN_FILENO, TCSANOW, &ttystate); // apply the changes
+    tcsetattr (STDIN_FILENO, TCSANOW, &ttystate); // apply the changes
   }
   else
   {
-    g_debug("Deactivating canonical mode.");
+    g_debug ("Deactivating canonical mode.");
     tcsetattr (STDIN_FILENO, TCSANOW, &savedttystate); // put canonical mode back
   }
 }
@@ -457,7 +457,7 @@ void quitloop (int error_status)
  */
 void error_quitloop ()
 {
-  quitloop(EXIT_FAILURE);
+  quitloop (EXIT_FAILURE);
 }
 
 /**

@@ -38,31 +38,31 @@ void log_handler (const gchar *log_domain,
                         gpointer user_data)
 {
   
-  if((log_level & G_LOG_LEVEL_MESSAGE))
+  if ((log_level & G_LOG_LEVEL_MESSAGE))
   {
-    if(!ut_config.quiet)
-      g_print("%s", message); /* There is no new line.
+    if (!ut_config.quiet)
+      g_print ("%s", message); /* There is no new line.
                                * (must be handled when calling g_message) */
     return;
   }
   
-  if((log_level & G_LOG_LEVEL_INFO))
+  if ((log_level & G_LOG_LEVEL_INFO))
   {
-    if(!ut_config.quiet && ut_config.verbose)
-      g_print("%s\n", message);
+    if (!ut_config.quiet && ut_config.verbose)
+      g_print ("%s\n", message);
     return;
   }
     
-  if((log_level & G_LOG_LEVEL_DEBUG))
+  if ((log_level & G_LOG_LEVEL_DEBUG))
   {
-    if(ut_config.debug)
-      g_print("** DEBUG: %s\n", message);
+    if (ut_config.debug)
+      g_print ("** DEBUG: %s\n", message);
     return;
   }
     
-  if((log_level & G_LOG_LEVEL_WARNING))
+  if ((log_level & G_LOG_LEVEL_WARNING))
   {
-    g_print(_("** WARNING: %s\n"), message);
+    g_print (_("** WARNING: %s\n"), message);
     return;
   }
   

@@ -54,8 +54,8 @@ void                  timer_add_milliseconds    (ut_timer* timer, guint millisec
 GTimeVal              gtvaldiff_to_gtval        (GTimeValDiff g);
 gchar*                timer_sec_msec_to_string  (guint sec, guint msec);
 gchar*                timer_get_maximum_time    ();
-gchar* timer_ut_timer_to_string(ut_timer *g);
+gchar*                timer_ut_timer_to_string  (ut_timer *g);
 gchar*                timer_gtvaldiff_to_string (GTimeValDiff g);
-ut_timer* timer_new_timer ();
-ut_timer* countdown_new_timer ();
+ut_timer*             timer_new_timer           ();
+ut_timer*             countdown_new_timer       ();
 #endif /* TIMER_H */

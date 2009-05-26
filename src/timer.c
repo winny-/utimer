@@ -39,10 +39,10 @@ static GTimeValDiff timer_get_diff (GTimer *start)
   GTimeValDiff diff;
   gulong tmpul;
   
-  diff.tv_sec = g_timer_elapsed(start, &tmpul);
+  diff.tv_sec = g_timer_elapsed (start, &tmpul);
   diff.tv_usec = (guint) tmpul;
   
-  g_debug("timer_get_diff: %u.%06u", diff.tv_sec, diff.tv_usec);
+  g_debug ("timer_get_diff: %u.%06u", diff.tv_sec, diff.tv_usec);
   return diff;
 }
 
@@ -69,8 +69,8 @@ static gboolean timer_apply_suffix (guint* value, gchar* suffix)
       return FALSE;
   }
   
-  g_debug("applying factor %d to %u", factor, *value);
-  (*value) = ul_mul(*value, factor);
+  g_debug ("applying factor %d to %u", factor, *value);
+  (*value) = ul_mul (*value, factor);
 
   return TRUE;
 }
@@ -81,7 +81,7 @@ static GTimeValDiff countdown_get_diff (ut_timer *t)
   gulong tmpul;
   
   /* diff = elapsed time */
-  diff.tv_sec = g_timer_elapsed(t->start_timer, &tmpul);
+  diff.tv_sec = g_timer_elapsed (t->start_timer, &tmpul);
   diff.tv_usec = tmpul;
   
   /* ------- We need: diff = given time - elapsed time ------- */
@@ -89,12 +89,12 @@ static GTimeValDiff countdown_get_diff (ut_timer *t)
   diff.tv_sec = t->seconds - diff.tv_sec;
   
   /* If there are more than one second, and usec < tv_usec */
-  if(diff.tv_sec > 0 && t->mseconds*1000 < diff.tv_usec)
+  if (diff.tv_sec > 0 && t->mseconds*1000 < diff.tv_usec)
   {
     diff.tv_sec--;
     diff.tv_usec = 1000000-(diff.tv_usec - t->mseconds*1000);
   }
-  else if(t->mseconds*1000 >= diff.tv_usec) /* usec >= tv_usec, normal substraction */
+  else if (t->mseconds*1000 >= diff.tv_usec) /* usec >= tv_usec, normal substraction */
   {
     diff.tv_usec = t->mseconds*1000 - diff.tv_usec;
   }
@@ -103,7 +103,7 @@ static GTimeValDiff countdown_get_diff (ut_timer *t)
     diff.tv_usec = 0;
   }
   
-  g_debug("countdown_get_diff: %u.%06u", diff.tv_sec, diff.tv_usec);
+  g_debug ("countdown_get_diff: %u.%06u", diff.tv_sec, diff.tv_usec);
   return diff;
 }
 
@@ -112,19 +112,19 @@ gboolean timer_print (ut_timer *t)
   GTimeValDiff delta;
   gchar* tmpchar;
   
-  if(t->isCountdown)
+  if (t->isCountdown)
     delta = countdown_get_diff(t);
   else
     delta = timer_get_diff(t->start_timer);
   
   tmpchar = timer_gtvaldiff_to_string(delta);
   
-  if(t->isCountdown)
-    g_message(_("\rTime Remaining: %s "), tmpchar); /* trailing space needed! */
+  if (t->isCountdown)
+    g_message (_("\rTime Remaining: %s "), tmpchar); /* trailing space needed! */
   else
-    g_message(_("\rElapsed Time: %s "), tmpchar);
+    g_message (_("\rElapsed Time: %s "), tmpchar);
   
-  g_free(tmpchar);
+  g_free (tmpchar);
   
   return TRUE;
 }
@@ -148,7 +148,7 @@ gboolean timer_check_loop (ut_timer *t)
       guint remaining_usec = 0;
       
       /* -If- more than 1 second remaining, and elapsed.usec > wanted_usec */
-      if(remaining_sec >= 1 && elapsed.tv_usec > wanted_usec)
+      if (remaining_sec >= 1 && elapsed.tv_usec > wanted_usec)
       {
         /* (wanted_usec - elapsed.tv_usec)  would be negative,
          * so we need to do this (this is like a decomposed substraction):
@@ -156,7 +156,7 @@ gboolean timer_check_loop (ut_timer *t)
         remaining_sec--;
         remaining_usec = 1000000 - (elapsed.tv_usec - wanted_usec);
       }
-      else if(wanted_usec >= elapsed.tv_usec) 
+      else if (wanted_usec >= elapsed.tv_usec) 
       {
         /* -If- wanted_usec >= elapsed.usec, normal substraction
          * (we explicetly don't care about remaining_sec)
@@ -217,7 +217,7 @@ gboolean timer_run_checkloop_thread (ut_timer *t)
 {
   GError  *error = NULL;
   
-  g_debug("Starting Timer thread");
+  g_debug ("Starting Timer thread");
   
   if (!g_thread_create((GThreadFunc) timer_check_loop, t, FALSE, &error))
   {
@@ -229,7 +229,7 @@ gboolean timer_run_checkloop_thread (ut_timer *t)
   return FALSE; // return FALSE to get removed from the main loop
 }
 
-gchar* timer_get_maximum_time()
+gchar* timer_get_maximum_time ()
 {
   ut_timer *t = g_new (ut_timer, 1);
   gchar* ret;
@@ -246,73 +246,73 @@ gboolean parse_time_pattern (gchar *pattern, ut_timer* timer)
   gchar *endptr, *tmp;
   guint val;
   
-  if(!pattern)
+  if (!pattern)
     return FALSE;
   
   tmp = pattern;
   
   do
   {
-    g_debug("Parsing: %s", tmp);
+    g_debug ("Parsing: %s", tmp);
     
     errno = 0;    /* To distinguish success/failure after call */
     
-    val = (guint) strtoul(tmp, &endptr, 10);
-    g_debug("strtoul() returned %u", val);
+    val = (guint) strtoul (tmp, &endptr, 10);
+    g_debug ("strtoul() returned %u", val);
     
     
     /* Check for various possible errors */
     
     if (errno == ERANGE && val == G_MAXUINT)
     {
-      if(*endptr == '\0')
-        g_warning(_("The last number is too big. It has been changed into: %u"), val);
+      if (*endptr == '\0')
+        g_warning (_("The last number is too big. It has been changed into: %u"), val);
       else
-        g_warning(_("The number before '%s' is too big. It has been changed into: %u"), endptr, val);
+        g_warning (_("The number before '%s' is too big. It has been changed into: %u"), endptr, val);
     }
     
-    if(endptr && g_str_has_prefix(endptr, "ms")) // if parsing the milliseconds
+    if (endptr && g_str_has_prefix (endptr, "ms")) // if parsing the milliseconds
     {
-      timer_add_milliseconds(timer, val);
+      timer_add_milliseconds (timer, val);
       endptr = endptr + 2;
     }
-    else if(endptr && timer_apply_suffix(&val, endptr)) // if parsing another unit
+    else if (endptr && timer_apply_suffix (&val, endptr)) // if parsing another unit
     {
-      timer_add_seconds(timer, val);
-      if(*endptr != '\0')
+      timer_add_seconds (timer, val);
+      if (*endptr != '\0')
         endptr = endptr + 1;
     }
     else
     {
-      g_error(_("Error when trying to parse: %s"), endptr);
+      g_error (_("Error when trying to parse: %s"), endptr);
     }
     
     tmp = endptr;
   }
-  while(*endptr != '\0');
+  while (*endptr != '\0');
 
 }
 
-void timer_add_seconds(ut_timer* timer, guint seconds)
+void timer_add_seconds (ut_timer* timer, guint seconds)
 {
-  g_debug("Adding %u seconds", seconds);
+  g_debug ("Adding %u seconds", seconds);
   timer->seconds = ui_add(timer->seconds, seconds);
-  g_debug("timer.seconds = %u", timer->seconds);
+  g_debug ("timer.seconds = %u", timer->seconds);
 }
 
-void timer_add_milliseconds(ut_timer* timer, guint milliseconds)
+void timer_add_milliseconds (ut_timer* timer, guint milliseconds)
 {
   guint bonus_seconds;
   guint diff;
   
   bonus_seconds = milliseconds / 1000;
-  if(bonus_seconds>0)
+  if (bonus_seconds>0)
   {
-    timer_add_seconds(timer, bonus_seconds);
+    timer_add_seconds (timer, bonus_seconds);
     milliseconds -= bonus_seconds * 1000;
   }
   
-  timer->mseconds = ui_add(timer->mseconds, milliseconds);
+  timer->mseconds = ui_add (timer->mseconds, milliseconds);
 }
 
 /**
@@ -320,7 +320,7 @@ void timer_add_milliseconds(ut_timer* timer, guint milliseconds)
  */
 gchar* timer_sec_msec_to_string(guint sec, guint msec)
 {
-  g_assert(msec < 1000);
+  g_assert (msec < 1000);
   guint all_secs = sec;
   guint days = sec / 86400;
   sec -= days * 86400;
@@ -340,16 +340,16 @@ gchar* timer_sec_msec_to_string(guint sec, guint msec)
                          msec);
 }
 
-gchar* timer_gtvaldiff_to_string(GTimeValDiff g)
+gchar* timer_gtvaldiff_to_string (GTimeValDiff g)
 {
-  return timer_sec_msec_to_string(g.tv_sec, g.tv_usec/1000);
+  return timer_sec_msec_to_string (g.tv_sec, g.tv_usec/1000);
 }
 
-gchar* timer_ut_timer_to_string(ut_timer *g)
+gchar* timer_ut_timer_to_string (ut_timer *g)
 {
   if (!g)
     return NULL;
-  return timer_sec_msec_to_string(g->seconds, g->mseconds);
+  return timer_sec_msec_to_string (g->seconds, g->mseconds);
 }
 
 ut_timer* timer_new_timer ()

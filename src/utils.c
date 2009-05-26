@@ -32,24 +32,24 @@
 
 #include "utils.h"
 
-gulong ul_add(gulong a, gulong b)
+gulong ul_add (gulong a, gulong b)
 {
-  if(a > G_MAXULONG - b)
+  if (a > G_MAXULONG - b)
   {
-    g_debug("Overflowing addition...");
+    g_debug ("Overflowing addition...");
     return G_MAXULONG;
   }
   else
     return a + b;
 }
 
-gulong ul_mul(gulong a, gulong b) // only positive multiplication
+gulong ul_mul (gulong a, gulong b) // only positive multiplication
 {
-  g_assert(a >= 0 && b >= 0);
+  g_assert (a >= 0 && b >= 0);
   
-  if(a > G_MAXULONG / b)
+  if (a > G_MAXULONG / b)
   {
-    g_debug("Overflowing multiplication...");
+    g_debug ("Overflowing multiplication...");
     return G_MAXULONG;
   }
   else
@@ -57,24 +57,24 @@ gulong ul_mul(gulong a, gulong b) // only positive multiplication
 }
 
 
-guint ui_add(guint a, guint b)
+guint ui_add (guint a, guint b)
 {
-  if(a > G_MAXUINT - b)
+  if (a > G_MAXUINT - b)
   {
-    g_debug("Overflowing addition...");
+    g_debug ("Overflowing addition...");
     return G_MAXUINT;
   }
   else
     return a + b;
 }
 
-guint ui_mul(guint a, guint b) // only positive multiplication
+guint ui_mul (guint a, guint b) // only positive multiplication
 {
-  g_assert(a >= 0 && b >= 0);
+  g_assert (a >= 0 && b >= 0);
   
-  if(a > G_MAXUINT / b)
+  if (a > G_MAXUINT / b)
   {
-    g_debug("Overflowing multiplication...");
+    g_debug ("Overflowing multiplication...");
     return G_MAXUINT;
   }
   else
