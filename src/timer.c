@@ -370,5 +370,6 @@ ut_timer* countdown_new_timer ()
   t->seconds = 0;
   t->mseconds = 0;
   t->isCountdown = TRUE;
+  t->checkloop_thread_stop_with_error = FALSE;
   return t;
 }
