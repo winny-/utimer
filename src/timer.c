@@ -112,17 +112,17 @@ gboolean timer_print (ut_timer *t)
   GTimeValDiff delta;
   gchar* tmpchar;
   
-  if (t->isCountdown)
+  if (t->mode == TIMER_MODE_COUNTDOWN)
     delta = countdown_get_diff(t);
   else
     delta = timer_get_diff(t->start_timer);
   
   tmpchar = timer_gtvaldiff_to_string(delta);
   
-  if (t->isCountdown)
+  if (t->mode == TIMER_MODE_COUNTDOWN)
     g_message (_("\rTime Remaining: %s "), tmpchar); /* trailing space needed! */
   else
-    g_message (_("\rElapsed Time: %s "), tmpchar);
+    g_message (_("\rElapsed Time: %s "), tmpchar); /* trailing space needed! */
   
   g_free (tmpchar);
   
@@ -358,7 +358,7 @@ ut_timer* timer_new_timer ()
   t = g_new (ut_timer, 1);
   t->seconds = 0;
   t->mseconds = 0;
-  t->isCountdown = FALSE;
+  t->mode = TIMER_MODE_TIMER;
   t->checkloop_thread_stop_with_error = FALSE;
   return t;
 }
@@ -369,7 +369,19 @@ ut_timer* countdown_new_timer ()
   t = g_new (ut_timer, 1);
   t->seconds = 0;
   t->mseconds = 0;
-  t->isCountdown = TRUE;
+  t->mode = TIMER_MODE_COUNTDOWN;
+  t->checkloop_thread_stop_with_error = FALSE;
+  return t;
+}
+
+
+ut_timer* stopwatch_new_timer ()
+{
+  ut_timer* t;
+  t = g_new (ut_timer, 1);
+  t->seconds = 0;
+  t->mseconds = 0;
+  t->mode = TIMER_MODE_STOPWATCH;
   t->checkloop_thread_stop_with_error = FALSE;
   return t;
 }

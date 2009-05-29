@@ -67,6 +67,15 @@ static GOptionEntry entries[] = {
     N_("TIMELENGTH")
   },
   
+  {"stopwatch",
+    's',
+    0,
+    G_OPTION_ARG_NONE,
+    &(ut_config.isStopwatch),
+    N_("start the stopwatch. Use 'Q' key to quit"),
+    NULL
+  },
+  
   {"verbose",
     'v',
     0,
@@ -180,6 +189,16 @@ int main (int argc, char *argv[])
   signal (SIGQUIT,  error_quitloop);
   signal (SIGTERM,  error_quitloop);
   
+    
+  /* set up the verbose/debug log handler */
+  g_log_set_handler (NULL,
+                     G_LOG_LEVEL_INFO
+                      | G_LOG_LEVEL_MESSAGE
+                      | G_LOG_LEVEL_DEBUG
+                      | G_LOG_LEVEL_WARNING,
+                     log_handler,
+                     NULL);
+  
             /* ------------ Initialization is done ---------- */
   
             /* -------------- Options parsing ------------- */
@@ -218,7 +237,8 @@ int main (int argc, char *argv[])
   if (!( ut_config.isTimer
       || ut_config.show_version
       || ut_config.show_limits
-      || ut_config.isCountdown))
+      || ut_config.isCountdown
+      || ut_config.isStopwatch))
   {
     g_printerr (_("No option has been specified!\n"));
     g_printerr (_("Run '%s --help' to see a full list of available command\
@@ -232,23 +252,14 @@ int main (int argc, char *argv[])
   if (ut_config.debug)
     ut_config.quiet = FALSE;
   
-  if (ut_config.isTimer && ut_config.isCountdown)
+  if (ut_config.isTimer && (ut_config.isCountdown || ut_config.isStopwatch)
+    || ut_config.isCountdown && ut_config.isStopwatch)
   {
-    g_warning (_("The following options cannot be used simultaneously:\
- -t (timer mode), -c (countdown mode), -s (stopwatch mode). The Timer mode will\
-  be used by default."));
-    g_free (ut_config.isCountdown);
-    ut_config.isCountdown = NULL;
+    g_warning (_("Conflicting options!\nThe following options cannot\n\
+ be used simultaneously:\n -t (timer mode), -c (countdown mode), -s\
+ (stopwatch mode)."));
+    exit (EXIT_FAILURE);
   }
-  
-  /* set up the verbose/debug log handler */
-  g_log_set_handler (NULL,
-                     G_LOG_LEVEL_INFO
-                      | G_LOG_LEVEL_MESSAGE
-                      | G_LOG_LEVEL_DEBUG
-                      | G_LOG_LEVEL_WARNING,
-                     log_handler,
-                     NULL);
   
   
   g_debug ("G_MAXUINT = %u", G_MAXUINT);
@@ -322,7 +333,7 @@ int main (int argc, char *argv[])
   g_idle_add ((GSourceFunc) start_thread_exit_check, NULL);
   
   /* -------------- TIMER&COUNTDOWN MODE -------------- */
-  if (ut_config.isTimer || ut_config.isCountdown)
+  if (ut_config.isTimer || ut_config.isCountdown || ut_config.isStopwatch)
   {
     
     if (ut_config.isCountdown)
@@ -330,10 +341,15 @@ int main (int argc, char *argv[])
       g_debug ("Countdown Mode");
       ttimer = countdown_new_timer ();
     }
-    else
+    else if (ut_config.isTimer)
     {
       g_debug ("Timer Mode");
       ttimer = timer_new_timer ();
+    }
+    else
+    {
+      g_debug ("Stopwatch Mode");
+      ttimer = stopwatch_new_timer ();
     }
     
     tmp = timer_get_maximum_time ();
@@ -349,18 +365,22 @@ int main (int argc, char *argv[])
     /* Parse the user-given time length */
     if (ut_config.isCountdown)
       parse_time_pattern (ut_config.isCountdown, ttimer);
-    else
+    else if (ut_config.isTimer)
       parse_time_pattern (ut_config.isTimer, ttimer);
     
-    tmp = timer_ut_timer_to_string (ttimer);
-    g_info (_("Timer will exit after reaching: %s"), tmp);
-    g_free (tmp);
-    tmp = NULL;
+    if (!ut_config.quiet && ut_config.verbose && !ut_config.isStopwatch)
+    {
+      tmp = timer_ut_timer_to_string (ttimer);
+      g_info (_("Timer will exit after reaching: %s"), tmp);
+      g_free (tmp);
+      tmp = NULL;
+    }
     
     ttimer->timer_print_source_id = g_timeout_add (TIMER_PRINT_RATE_MSEC,
                                                    (GSourceFunc) timer_print,
                                                    ttimer);
-    g_idle_add ((GSourceFunc) timer_run_checkloop_thread, ttimer);
+    if (ttimer->mode != TIMER_MODE_STOPWATCH)
+      g_idle_add ((GSourceFunc) timer_run_checkloop_thread, ttimer);
   } /* -------------- END TIMER&COUNTDOWN MODE -------------- */
   else
   { /* No mode selected! We quit the loop ASAP. */
@@ -514,19 +534,36 @@ void clean_up (void)
 {
   if (ttimer)
   {
+    g_debug ("Freeing ttimer...");
     g_free (ttimer);
     ttimer = NULL;
   }
   
   if (start_timer)
   {
+    g_debug ("Freeing start_timer...");
     g_timer_destroy (start_timer);
     start_timer = NULL;
   }
   
   if (ut_config.locale)
   {
+    g_debug ("Freeing locale...");
     g_free (ut_config.locale);
     ut_config.locale = NULL;
+  }
+  
+  if (ut_config.isCountdown)
+  {
+    g_debug ("Freeing isCountdown...");
+    g_free (ut_config.isCountdown);
+    ut_config.isCountdown = NULL;
+  }
+  
+  if (ut_config.isTimer)
+  {
+    g_debug ("Freeing isTimer...");
+    g_free (ut_config.isTimer);
+    ut_config.isTimer = NULL;
   }
 }

@@ -32,6 +32,7 @@ typedef struct
   gchar       *locale;
   gchar       *isTimer;
   gchar       *isCountdown;
+  gboolean    isStopwatch;
   gboolean    verbose;
   gboolean    quiet;
   gboolean    show_version;

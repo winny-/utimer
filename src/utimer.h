@@ -64,5 +64,5 @@ void        error_quitloop              ();
 void        success_quitloop            ();
 void        set_tty_canonical           (int state);
 void        reset_tty_canonical_mode    ();
-void        clean_up (void);
+void        clean_up                    (void);
 #endif /* UTIMER_H */

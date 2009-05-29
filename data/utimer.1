@@ -33,9 +33,7 @@ compared to the timer, has the only difference that the starting point is the gi
 
 The
 .B stopwatch
-is like a real stopwatch where you can measure time of multiple events, or use it for (board) games, or anything else. It starts counting time when the program is started, and it can be stopped or otherwise you can just hit the ENTER key when you have to take multiple measures without stopping the counting. (
-.B The stopwatch is not implemented yet!
-)
+is like a real stopwatch where you can measure time of multiple events, or use it for (board) games, or anything else. It starts counting time when the program is started, and it can be stopped (using the 'Q' key) or otherwise you can just hit the ENTER key when you have to take multiple measures without stopping the counting.
 
 .LP 
 .SH "OPTIONS"
@@ -56,6 +54,13 @@ Shows a countdown that runs until TIMELENGTH has passed (until it reaches zero).
 section in
 .B USAGE
 to read more about how to use the countdown.
+.B
+.IP --stopwatch\ |\ \-s
+Starts the stopwatch that runs until it is stopped using the 'Q' key or by other means (Ctrl+C, system signals, ...). See the 
+.B Stopwatch
+section in
+.B USAGE
+to read more about how to use the stopwatch.
 .B
 .IP --verbose\ |\ \-v
 Print more information during the program's process. (note that if used with -q, this option is ignored)
@@ -120,7 +125,14 @@ When using the countdown, µTimer will show the current remaining time before ex
 See the Timer usage to know how to write a valid TIMELENGTH.
 .B
 .IP Stopwatch:
-Not available in this version.
+
+.B utimer --stopwatch
+or
+.B utimer -s
+
+When using the stopwatch, it counts until it is stopped using the 'Q' key or Ctrl+C or certain system signals (SIGKILL for example).
+You can use the ENTER key to take measures (like a snapshot) of the elapsed time.
+
 
 .SH SHORTCUT KEYS
 
@@ -138,6 +150,11 @@ section above).
 .IP SPACEBAR:
 
 You can pause the timer anytime using the spacebar key. To resume, just hit the spacebar again.
+
+.B
+.IP ENTER:
+
+With the stopwatch, you can use the ENTER key to take measures (like a snapshot) of the elapsed time.
 
 .SH EXIT STATUS
 After the timer or the countdown are done, the program exits with a success exit status code (0). But when you quit during the timer/countdown is counting using 'q', it exits with an error exit status code (1). You can change this behaviour using the 
@@ -161,6 +178,13 @@ runs the countdown for 1 minute, 48 seconds and 500 milliseconds.
 .IP
 .B utimer \--countdown=2d5m
 runs the countdown for 2 days plus 5 minutes.
+
+.IP Stopwatch:
+
+.B utimer \-s
+starts the stopwatch.
+
+
 .SH "ACCURACY"
 The timer can be accurate enough for most common uses, and we cannot give any warranty on its accuracy. This is due to the time needed to start and to exit the program. On our test machines, it's as low as 5 milliseconds.
 .SH "BUGS"

@@ -10,14 +10,12 @@ multifunction timer (command-line only).
 It provides:
  - a timer (e.g. count from 0 to 4 minutes and 20 seconds),
  - a countdown (e.g. count from 1 hour and 10 minutes down to 0),
- - a stopwatch (NOT AVAILABLE in version @PACKAGE_VERSION@).
+ - a stopwatch (count from 0 til it is stopped).
 
 Version Information
 -------------------
 
 Version:  @PACKAGE_VERSION@
-
-This version doesn't contain the stopwatch feature.
 
 Homepage / Download
 -------------------
@@ -77,10 +75,10 @@ Timer:
   
   The timer mode will reach the given time length and then exits.
   
-  For the timer, you have to use the -t option. This option requires a time
+  For the timer, you have to use the --timer (or -t) option. This option requires a time
   length to be given, like this:
 
-    utimer -t 1h30m45s300ms
+    utimer --timer 1h30m45s300ms
 
   The time length is composed of pairs of a value and a suffix, it can be in any
   order.
@@ -117,13 +115,20 @@ Countdown:
   exits.
   
   The countdown mode works almost the same as the timer (see above), except you
-  have to use the -c option.
+  have to use the --countdown (or -c) option.
   
   For example:
   
-    utimer -c 1m30s
+    utimer --countdown 1m30s
   
+Stopwatch:
   
+  The stopwatch starts counting from 0 and keeps counting until it is stopped
+  (like un infinite timer).
+  
+  To start the stopwatch, you have to use the --stopwatch (or -s) option:
+  
+    utimer --stopwatch
 
 Copyright
 ---------

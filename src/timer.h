@@ -32,6 +32,13 @@ typedef struct {
   gboolean   negative;
 } GTimeValDiff;
 
+typedef enum
+{
+  TIMER_MODE_COUNTDOWN,
+  TIMER_MODE_STOPWATCH,
+  TIMER_MODE_TIMER
+} timer_mode;
+
 typedef struct
 {
   GTimer        *start_timer;
@@ -40,7 +47,7 @@ typedef struct
   void          (*success_callback)();
   void          (*error_callback)();
   guint         timer_print_source_id;
-  gboolean      isCountdown;
+  timer_mode    mode;
   gboolean      checkloop_thread_stop_with_error;
 } ut_timer;
 
@@ -58,4 +65,5 @@ gchar*                timer_ut_timer_to_string  (ut_timer *g);
 gchar*                timer_gtvaldiff_to_string (GTimeValDiff g);
 ut_timer*             timer_new_timer           ();
 ut_timer*             countdown_new_timer       ();
+ut_timer*             stopwatch_new_timer       ();
 #endif /* TIMER_H */
