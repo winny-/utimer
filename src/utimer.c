@@ -53,7 +53,7 @@ static GOptionEntry entries[] = {
     G_OPTION_ARG_STRING,
     &(ut_config.isTimer),
     N_("count from 0 to TIMELENGTH and then exit\
- (e.g. utimer -t 31m27s300ms)."),
+ (e.g. utimer -t 31m27s300ms)"),
     N_("TIMELENGTH")
   },
   
@@ -63,7 +63,7 @@ static GOptionEntry entries[] = {
     G_OPTION_ARG_STRING,
     &(ut_config.isCountdown),
     N_("count from TIMELENGTH down to 0 and exit (e.g.\
- utimer -c 30d9h50s)."),
+ utimer -c 30d9h50s)"),
     N_("TIMELENGTH")
   },
   
@@ -81,7 +81,7 @@ static GOptionEntry entries[] = {
     0,
     G_OPTION_ARG_NONE,
     &(ut_config.verbose),
-    N_("Verbose output."),
+    N_("Verbose output"),
     NULL
   },
   
@@ -90,7 +90,7 @@ static GOptionEntry entries[] = {
     0,
     G_OPTION_ARG_NONE,
     &(ut_config.quiet),
-    N_("Quiet output."),
+    N_("Quiet output"),
     NULL
   },
   
@@ -100,7 +100,7 @@ static GOptionEntry entries[] = {
     G_OPTION_ARG_NONE,
     &(ut_config.quit_with_success), 
     N_("When hitting 'q' to end the program, exit with a SUCCESS exit\
- status (0)."),
+ status (0)"),
     NULL
   },
 
@@ -118,7 +118,7 @@ static GOptionEntry entries[] = {
     0,
     G_OPTION_ARG_NONE,
     &(ut_config.show_version),
-    N_("Display the current version of µTimer."),
+    N_("Display the current version of µTimer"),
     NULL
   },
   
@@ -127,7 +127,7 @@ static GOptionEntry entries[] = {
     0,
     G_OPTION_ARG_NONE,
     &(ut_config.debug),
-    N_("Debug output."),
+    N_("Debug output"),
     NULL
   },
 
@@ -524,7 +524,7 @@ int check_exit_from_user ()
       }
       
     }
-  } while (c != 'q'); /* checks for 'q' key */
+  } while (c != 'q' && c != 'Q'); /* checks for 'q' key */
   
   /* If the user asks for exiting, we stop the loop. */
   quitloop ( (ut_config.quit_with_success ? EXIT_SUCCESS : EXIT_FAILURE) );
