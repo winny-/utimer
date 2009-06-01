@@ -31,15 +31,19 @@ To download other releases of µTimer, use one of these download locations:
 Requirements
 ------------
 
-You need to install the following:
-    glib
+To build µTimer, you need the following software:
+    Glib (>= 2.18.2)
     intltool (>= 0.40.5)
+    Autotools
+
+gtester (from Glib) is necessary to run tests.
 
 Installation
 ------------
 
 Please read the INSTALL file in this package to know more about how to install
 this software.
+
 An easy way is:
   $ ./configure
   $ make
@@ -49,6 +53,9 @@ user (or use `sudo make install' for Debian or Ubuntu).
 
 If the `./configure' fails:
  Try running `./autogen.sh' first, then try again with the commands above.
+
+Note that you can also run tests using:
+  $ make test
 
 Bugs Report
 -----------
