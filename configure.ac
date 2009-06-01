@@ -1,4 +1,4 @@
-AC_INIT([utimer], [0.3-trunk], [bugs@utimer.codealpha.net])
+AC_INIT([utimer], [0.4-trunk], [bugs@utimer.codealpha.net])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h])
