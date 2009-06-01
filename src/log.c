@@ -29,10 +29,11 @@
 #include <glib.h>
 #include <glib/gi18n-lib.h>
 
+#include "utimer.h"
 #include "log.h"
-#include "ut_config.h"
+#include "utils.h"
 
-void log_handler (const gchar *log_domain,
+static void log_handler (const gchar *log_domain,
                         GLogLevelFlags log_level,
                         const gchar *message,
                         gpointer user_data)
@@ -66,4 +67,17 @@ void log_handler (const gchar *log_domain,
     return;
   }
   
+}
+
+
+/* set up the verbose/debug log handler */
+void setup_log_handler ()
+{
+  g_log_set_handler (NULL,
+                     G_LOG_LEVEL_INFO
+                      | G_LOG_LEVEL_MESSAGE
+                      | G_LOG_LEVEL_DEBUG
+                      | G_LOG_LEVEL_WARNING,
+                     log_handler,
+                     NULL);
 }

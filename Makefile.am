@@ -1,3 +1,5 @@
+include $(top_srcdir)/Makefile.decl 
+
 SUBDIRS = src po data
 
 ACLOCAL_AMFLAGS = -I m4
@@ -8,6 +10,4 @@ DISTCLEANFILES =                \
         intltool-update         \
         Makefile.in
 
-CLEANFILES = *~
-
-EXTRA_DIST = README autogen.sh Doxyfile
+EXTRA_DIST += README autogen.sh Doxyfile

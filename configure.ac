@@ -3,9 +3,10 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h])
 
-PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.18.2])
+PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.18.2 gobject-2.0])
 PKG_CHECK_MODULES([GIO], [gio-unix-2.0])
 AC_CHECK_LIB(gthread-2.0, g_thread_init)
+AC_CHECK_LIB(gobject-2.0, main)
 
 # -- i18n --
 
@@ -37,6 +38,6 @@ AC_MSG_RESULT($enable_debug)
 
 # -- -- --
 
-AC_CONFIG_FILES([Makefile src/Makefile po/Makefile.in README data/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile po/Makefile.in README data/Makefile src/tests/Makefile])
 
 AC_OUTPUT

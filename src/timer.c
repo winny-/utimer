@@ -34,45 +34,18 @@
 #include "utimer.h"
 #include "timer.h"
 
-static GTimeValDiff timer_get_diff (GTimer *start)
+static GTimeValDiff timer_get_diff (ut_timer *timer)
 {
   GTimeValDiff diff;
   gulong tmpul;
   
-  diff.tv_sec = g_timer_elapsed (start, &tmpul);
+  g_assert (timer && timer->gtimer);
+  
+  diff.tv_sec = g_timer_elapsed (timer->gtimer, &tmpul);
   diff.tv_usec = (guint) tmpul;
   
   g_debug ("timer_get_diff: %u.%06u", diff.tv_sec, diff.tv_usec);
   return diff;
-}
-
-static gboolean timer_apply_suffix (guint* value, gchar* suffix)
-{
-  int factor;
-
-  switch (*suffix)
-  {
-    case 0:
-    case 's':
-      factor = 1;
-      break;
-    case 'm':
-      factor = 60;
-      break;
-    case 'h':
-      factor = 60 * 60;
-      break;
-    case 'd':
-      factor = 60 * 60 * 24;
-      break;
-    default:
-      return FALSE;
-  }
-  
-  g_debug ("applying factor %d to %u", factor, *value);
-  (*value) = ul_mul (*value, factor);
-
-  return TRUE;
 }
 
 static GTimeValDiff countdown_get_diff (ut_timer *t)
@@ -81,7 +54,7 @@ static GTimeValDiff countdown_get_diff (ut_timer *t)
   gulong tmpul;
   
   /* diff = elapsed time */
-  diff.tv_sec = g_timer_elapsed (t->start_timer, &tmpul);
+  diff.tv_sec = g_timer_elapsed (t->gtimer, &tmpul);
   diff.tv_usec = tmpul;
   
   /* ------- We need: diff = given time - elapsed time ------- */
@@ -115,7 +88,7 @@ gboolean timer_print (ut_timer *t)
   if (t->mode == TIMER_MODE_COUNTDOWN)
     delta = countdown_get_diff(t);
   else
-    delta = timer_get_diff(t->start_timer);
+    delta = timer_get_diff(t);
   
   tmpchar = timer_gtvaldiff_to_string(delta);
   
@@ -139,7 +112,7 @@ gboolean timer_check_loop (ut_timer *t)
   
   while (!t->checkloop_thread_stop_with_error)
   {
-    elapsed = timer_get_diff (t->start_timer);
+    elapsed = timer_get_diff (t);
     
     if (elapsed.tv_sec < wanted_sec || elapsed.tv_sec == wanted_sec && elapsed.tv_usec < wanted_usec)
     {
@@ -186,7 +159,8 @@ gboolean timer_check_loop (ut_timer *t)
   }
   
   /* Time's up! request to stop updating, and returns */
-  g_source_remove (t->timer_print_source_id);
+  if (t->timer_print_source_id)
+    g_source_remove (t->timer_print_source_id);
   timer_print(t);
   
   if (t->checkloop_thread_stop_with_error) /* if we quitted the loop with an error */
@@ -241,13 +215,16 @@ gchar* timer_get_maximum_time ()
   return ret;
 }
 
-gboolean parse_time_pattern (gchar *pattern, ut_timer* timer)
+gboolean parse_time_pattern (gchar *pattern, guint *seconds, guint *mseconds)
 {
   gchar *endptr, *tmp;
   guint val;
   
-  if (!pattern)
+  if (!pattern || !seconds || !mseconds)
     return FALSE;
+  
+  *seconds = 0;
+  *mseconds = 0;
   
   tmp = pattern;
   
@@ -259,7 +236,6 @@ gboolean parse_time_pattern (gchar *pattern, ut_timer* timer)
     
     val = (guint) strtoul (tmp, &endptr, 10);
     g_debug ("strtoul() returned %u", val);
-    
     
     /* Check for various possible errors */
     
@@ -273,24 +249,30 @@ gboolean parse_time_pattern (gchar *pattern, ut_timer* timer)
     
     if (endptr && g_str_has_prefix (endptr, "ms")) // if parsing the milliseconds
     {
-      timer_add_milliseconds (timer, val);
-      endptr = endptr + 2;
+      guint extra_seconds = val / 1000;
+      val -= extra_seconds * 1000;
+      *seconds = ui_add (*seconds, extra_seconds);
+      *mseconds = ui_add (*mseconds, val);
+      
+      endptr = endptr + 2; // we go after the 'ms' part
     }
-    else if (endptr && timer_apply_suffix (&val, endptr)) // if parsing another unit
+    else if (endptr && apply_suffix (&val, endptr)) // if parsing another unit
     {
-      timer_add_seconds (timer, val);
+      *seconds = ui_add(*seconds, val);
       if (*endptr != '\0')
         endptr = endptr + 1;
     }
     else
     {
       g_error (_("Error when trying to parse: %s"), endptr);
+      return FALSE;
     }
     
     tmp = endptr;
   }
   while (*endptr != '\0');
-
+  
+  return TRUE;
 }
 
 void timer_add_seconds (ut_timer* timer, guint seconds)
@@ -352,36 +334,52 @@ gchar* timer_ut_timer_to_string (ut_timer *g)
   return timer_sec_msec_to_string (g->seconds, g->mseconds);
 }
 
-ut_timer* timer_new_timer ()
+ut_timer* timer_new (guint seconds,
+                     guint mseconds,
+                     timer_mode mode,
+                     GVoidFunc success_callback,
+                     GVoidFunc error_callback,
+                     GTimer* timer)
 {
+  if (!timer)
+  {
+    g_debug ("%s: timer is NULL. Returning NULL.", __FUNCTION__);
+    return NULL;
+  }
+  
   ut_timer* t;
   t = g_new (ut_timer, 1);
-  t->seconds = 0;
-  t->mseconds = 0;
-  t->mode = TIMER_MODE_TIMER;
+  t->seconds = seconds;
+  t->mseconds = mseconds;
+  t->mode = mode;
   t->checkloop_thread_stop_with_error = FALSE;
+  t->success_callback = success_callback;
+  t->error_callback   = error_callback;
+  t->gtimer      = timer;
   return t;
 }
 
-ut_timer* countdown_new_timer ()
+ut_timer* timer_new_timer (guint seconds,
+                           guint mseconds,
+                           GVoidFunc success_callback,
+                           GVoidFunc error_callback,
+                           GTimer* timer)
 {
-  ut_timer* t;
-  t = g_new (ut_timer, 1);
-  t->seconds = 0;
-  t->mseconds = 0;
-  t->mode = TIMER_MODE_COUNTDOWN;
-  t->checkloop_thread_stop_with_error = FALSE;
-  return t;
+  return timer_new (seconds, mseconds, TIMER_MODE_TIMER, success_callback, error_callback, timer);
 }
 
-
-ut_timer* stopwatch_new_timer ()
+ut_timer* countdown_new_timer (guint seconds,
+                               guint mseconds,
+                               GVoidFunc success_callback,
+                               GVoidFunc error_callback,
+                               GTimer* timer)
 {
-  ut_timer* t;
-  t = g_new (ut_timer, 1);
-  t->seconds = 0;
-  t->mseconds = 0;
-  t->mode = TIMER_MODE_STOPWATCH;
-  t->checkloop_thread_stop_with_error = FALSE;
-  return t;
+  return timer_new (seconds, mseconds, TIMER_MODE_COUNTDOWN, success_callback, error_callback, timer);
+}
+
+ut_timer* stopwatch_new_timer (GVoidFunc success_callback,
+                               GVoidFunc error_callback,
+                               GTimer* timer)
+{
+  return timer_new (0, 0, TIMER_MODE_STOPWATCH, success_callback, error_callback, timer);
 }

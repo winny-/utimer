@@ -24,9 +24,32 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include "timer.h"
+
+typedef struct
+{
+  gchar       *locale;
+  gboolean    verbose;
+  gboolean    quiet;
+  gboolean    debug;
+  gboolean    quit_with_success;
+  gint        current_exit_status_code;
+  GTimer      *timer;
+} Config;
+
 gulong        ul_mul                    (gulong a,  gulong b);
 gulong        ul_add                    (gulong a,  gulong b);
 guint         ui_add                    (guint a,   guint b);
 guint         ui_mul                    (guint a,   guint b);
+gboolean      apply_suffix              (guint *value, gchar *suffix);
+gboolean      start_thread_exit_check   (ut_timer *timer);
+int           check_exit_from_user      ();
+void          quitloop                  (int error_status);
+void          error_quitloop            ();
+void          success_quitloop          ();
+void          set_tty_canonical         (int state);
+void          reset_tty_canonical_mode  ();
+void          init_config               (Config *conf);
+void          free_config               (Config *conf);
 
 #endif /* UTILS_H */

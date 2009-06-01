@@ -24,7 +24,17 @@
 #ifndef UTIMER_H
 #define UTIMER_H
 
-#include "ut_config.h"
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#include <termios.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <glib.h>
+#include <glib/gi18n-lib.h>
+
 #include "utils.h"
 #include "timer.h"
 #include "log.h"
@@ -55,14 +65,9 @@
 #define TIMER_PRINT_RATE_MSEC  79
 #define TIMER_CHECK_RATE_MSEC  500
 
-ut_timer    *ttimer;
+GMainLoop         *loop;
+gboolean          paused;
+struct termios    savedttystate;
+Config            ut_config;
 
-gboolean    start_thread_exit_check     ();
-int         check_exit_from_user        ();
-void        quitloop                    (int error_status);
-void        error_quitloop              ();
-void        success_quitloop            ();
-void        set_tty_canonical           (int state);
-void        reset_tty_canonical_mode    ();
-void        clean_up                    (void);
 #endif /* UTIMER_H */

@@ -28,9 +28,5 @@
 #endif 
 
 
-extern void log_handler (const gchar *log_domain,
-                         GLogLevelFlags log_level,
-                         const gchar *message,
-                         gpointer user_data);
 
 #endif /* LOG_H */
