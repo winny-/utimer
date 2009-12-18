@@ -3,14 +3,14 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h])
 
-PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.18.2 gobject-2.0])
+PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.16.6 gobject-2.0])
 PKG_CHECK_MODULES([GIO], [gio-unix-2.0])
 AC_CHECK_LIB(gthread-2.0, g_thread_init)
 AC_CHECK_LIB(gobject-2.0, main)
 
 # -- i18n --
 
-AC_PROG_INTLTOOL([0.40.5])
+AC_PROG_INTLTOOL([0.37.1])
 GETTEXT_PACKAGE=utimer
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [Gettext package.])
