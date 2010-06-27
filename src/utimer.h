@@ -1,7 +1,7 @@
 /*
  *  utimer.h
  *
- *  Copyright 2008, 2009  Arnaud Soyez <weboide@codealpha.net>
+ *  Copyright 2008-2010  Arnaud Soyez <weboide@codealpha.net>
  *
  *  This file is part of uTimer.
  *  (uTimer is a CLI program that features a timer, countdown, and a stopwatch)
@@ -63,7 +63,6 @@
 
 #define DESCRIPTION ""
 
-#define TIMER_PRINT_RATE_MSEC  79
 #define TIMER_CHECK_RATE_MSEC  500
 
 GMainLoop         *loop;

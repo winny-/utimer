@@ -1,7 +1,7 @@
 /*
  *  utils.c
  *
- *  Copyright 2008, 2009  Arnaud Soyez <weboide@codealpha.net>
+ *  Copyright 2008-2010  Arnaud Soyez <weboide@codealpha.net>
  *
  *  This file is part of uTimer.
  *  (uTimer is a CLI program that features a timer, countdown, and a stopwatch)
@@ -178,7 +178,6 @@ void reset_tty_canonical_mode ()
 void quitloop (int error_status)
 {
   g_assert (loop);
-  g_message ("\n");
   g_debug ("%s: Stopping Main Loop (error code: %i)...", __FUNCTION__, error_status);
   
   // We set the exit status code
@@ -223,7 +222,7 @@ int check_exit_from_user ()
   do
   {
     c = fgetc (stdin);
-    g_print ("\b ");
+    g_print ("\b \b"); // backspace, write a space to clear, backspace again
     switch (c)
     {
       case ' ':
@@ -242,7 +241,7 @@ int check_exit_from_user ()
       
     }
   } while (c != 'q' && c != 'Q'); /* checks for 'q' key */
-  
+
   /* If the user asks for exiting, we stop the loop. */
   quitloop ( (ut_config.quit_with_success ? EXIT_SUCCESS : EXIT_FAILURE) );
 }

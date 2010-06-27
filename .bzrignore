@@ -36,3 +36,6 @@ po/*.po.old
 ./src/tests/test-timer
 ./src/tests/.deps
 ./src/tests/maintests
+./nbproject
+./Makefile-utimer.mk
+./.dep.inc
