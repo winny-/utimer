@@ -42,25 +42,22 @@ is like a real stopwatch where you can measure time of multiple events, or use i
 Print the command line options.
 .B
 .IP --timer=TIMELENGTH\ |\ \-t\ TIMELENGTH
-Shows a timer that runs until TIMELENGTH has passed. TIMELENGTH is a pattern that should look like: 2d15h39m58s120ms. See the 
-.B Timer
-section in
+Displays a timer which will run for the specified TIMELENGTH. TIMELENGTH is a pattern that should look like: 2d15h39m58s120ms. See the
 .B USAGE
-to read more about how to use the timer.
+section to read more about how to use the timer.
 .B
 .IP --countdown=TIMELENGTH\ |\ \-c\ TIMELENGTH
-Shows a countdown that runs until TIMELENGTH has passed (until it reaches zero). TIMELENGTH is a pattern that should look like: 2d15h39m58s120ms. See the 
-.B Countdown
-section in
+Starts a countdown which will run for the specified TIMELENGTH (from TIMELENGTH down to zero). TIMELENGTH is a pattern that should look like: 2d15h39m58s120ms. See the
 .B USAGE
-to read more about how to use the countdown.
+section to read more about how to use the countdown.
 .B
 .IP --stopwatch\ |\ \-s
-Starts the stopwatch that runs until it is stopped using the 'Q' key or by other means (Ctrl+C, system signals, ...). See the 
-.B Stopwatch
-section in
+Starts the stopwatch and runs until it is stopped by hitting the 'Q' key or by other means (Ctrl+C, system signals, ...). See the
 .B USAGE
-to read more about how to use the stopwatch.
+section to read more about how to use the stopwatch.
+.B
+.IP --refresh-rate=RATE\ |\ \-r\ RATE
+Used to specify a display refresh rate. This purposedly slows down the refresh rate and hides the unneeded time units. RATE can be 'm' for every minute, 's' for every second, 'ms' for every millisecond (actually every ~0.1s). This option can be useful to lower CPU usage or reduce the workload of your terminal (lower erase-and-print frequency). Default is 'ms'.
 .B
 .IP --verbose\ |\ \-v
 Print more information during the program's process. (note that if used with -q, this option is ignored)
@@ -76,7 +73,7 @@ Display the limits of
 .B µTimer
 for your machine (maximum values, longest timer, ...). It may be not be perfectly accurate. Use this option only to have an idea of what it can do.
 .B
-.IP --quit-with-success
+.IP --quit-with-success\ |\ \-Q
 When you quit the program using the 'q' key, it will exit with a success exit status code, instead of an error one normally. (Note that 'ctrl+c' isn't affected by this option)
 .SH "USAGE"
 .B
