@@ -378,18 +378,17 @@ ut_timer* timer_new(guint seconds,
   ut_timer* t;
   t = g_new(ut_timer, 1);
   t->seconds = seconds;
+
+  // if we have mseconds > 1000, we have seconds to add to t->seconds
   if (mseconds >= 1000)
   {
-    g_debug("%s: mseconds (%u) >= 1000, reducing...", __FUNCTION__, mseconds);
-    guint extra_sec = mseconds / 1000;
-    g_debug("%s: extra sec %u", __FUNCTION__, extra_sec);
-    t->seconds = ui_add(t->seconds, extra_sec);
-    guint remove_sec = ui_mul(extra_sec, 1000);
-    g_debug("%s: removing  %u ms", __FUNCTION__, remove_sec);
-    t->mseconds = mseconds - remove_sec;
+    t->seconds = ui_add(t->seconds, mseconds / 1000);
+    t->mseconds = mseconds % 1000;
   }
   else
     t->mseconds = mseconds;
+
+  // our mseconds must be lower than 1000
   g_assert_cmpuint(t->mseconds, <, 1000);
 
   t->mode = mode;

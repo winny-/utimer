@@ -175,7 +175,7 @@ static void test_creation_timer()
   g_test_queue_free(ttimer);
 
   g_assert_cmpuint(ttimer->seconds, ==, ui_add(sec, msec / 1000));
-  g_assert_cmpuint(ttimer->mseconds, ==, msec - (msec / 1000)*1000);
+  g_assert_cmpuint(ttimer->mseconds, ==, msec % 1000);
   g_assert(ttimer->gtimer == gtimer);
   g_assert(ttimer->success_callback == success_quitloop);
   g_assert(ttimer->error_callback == error_quitloop);
@@ -225,7 +225,7 @@ static void test_creation_countdown()
   g_test_queue_free(ttimer);
 
   g_assert_cmpuint(ttimer->seconds, ==, ui_add(sec, msec / 1000));
-  g_assert_cmpuint(ttimer->mseconds, ==, msec - (msec / 1000)*1000);
+  g_assert_cmpuint(ttimer->mseconds, ==, msec % 1000);
   g_assert(ttimer->gtimer == gtimer);
   g_assert(ttimer->success_callback == success_quitloop);
   g_assert(ttimer->error_callback == error_quitloop);
@@ -311,7 +311,7 @@ static void test_timer_add_milliseconds()
   guint add_msec = g_test_rand_int();
   timer_add_milliseconds(ttimer, add_msec);
 
-  guint result = ui_add(init_msec - (init_msec / 1000)*1000, add_msec - (add_msec / 1000)*1000);
+  guint result = ui_add(init_msec % 1000, add_msec % 1000);
 
   g_debug("ttimer->mseconds = %u", ttimer->mseconds);
   g_debug("result = %u", result);

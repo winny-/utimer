@@ -322,7 +322,7 @@ int main(int argc, char *argv[])
   /* -------------- TIMER & COUNTDOWN MODE -------------- */
   if (timer_info || countdown_info || stopwatch)
   {
-    timer_precision prec = TIMER_PRECISION_MILLISECOND;
+    timer_precision precision = TIMER_PRECISION_MILLISECOND;
 
 
     /* set up refresh rate if given */
@@ -330,30 +330,33 @@ int main(int argc, char *argv[])
     {
       if (g_ascii_strcasecmp(refresh_rate, "m") == 0)
       {
-        prec = TIMER_PRECISION_MINUTE;
+        precision = TIMER_PRECISION_MINUTE;
       }
       else if (g_ascii_strcasecmp(refresh_rate, "s") == 0)
       {
-        prec = TIMER_PRECISION_SECOND;
+        precision = TIMER_PRECISION_SECOND;
       }
     }
+
+    guint seconds = 0;
+    guint mseconds = 0;
 
     if (countdown_info)
     {
       g_debug("Countdown Mode");
-      ttimer = timer_new_countdown(0, 0, success_quitloop, error_quitloop, ut_config.timer, prec);
-      parse_time_pattern(countdown_info, &(ttimer->seconds), &(ttimer->mseconds));
+      parse_time_pattern(countdown_info, &(seconds), &(mseconds));
+      ttimer = timer_new_countdown(seconds, mseconds, success_quitloop, error_quitloop, ut_config.timer, precision);
     }
     else if (timer_info)
     {
       g_debug("Timer Mode");
-      ttimer = timer_new_timer(0, 0, success_quitloop, error_quitloop, ut_config.timer, prec);
-      parse_time_pattern(timer_info, &(ttimer->seconds), &(ttimer->mseconds));
+      parse_time_pattern(timer_info, &(seconds), &(mseconds));
+      ttimer = timer_new_timer(seconds, mseconds, success_quitloop, error_quitloop, ut_config.timer, precision);
     }
     else
     {
       g_debug("Stopwatch Mode");
-      ttimer = timer_new_stopwatch(success_quitloop, error_quitloop, ut_config.timer, prec);
+      ttimer = timer_new_stopwatch(success_quitloop, error_quitloop, ut_config.timer, precision);
     }
 
     tmp = timer_get_maximum_time();
