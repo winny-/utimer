@@ -50,15 +50,15 @@
 \t- a stopwatch.\
 \n\n µTimer always exits after\
  the timer or countdown are done counting. This can be useful\
- for using countdowns in scripts, for example. The stopwatch, which is not\
- concerned, needs to be stopped manually using 'q'.")
+ for using countdowns in scripts, for example. The stopwatch (which does not\
+ stop by itself) needs to be stopped manually by hitting 'Q'.")
 
 #define COPYRIGHT_TXT "License GPLv3+: GNU GPL version 3 or later\
  <http://gnu.org/licenses/gpl.html>\nThis is free software: you are free to\
  change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by\
  law."
 
-#define COPYRIGHT "Copyright 2008, 2009   Arnaud Soyez <weboide@codealpha.net>"
+#define COPYRIGHT "Copyright 2008-2010  Arnaud Soyez <weboide@codealpha.net>"
 
 
 #define DESCRIPTION ""

@@ -24,11 +24,30 @@
 #include "utimer.h"
 
 static gchar *timer_info, *countdown_info, *refresh_rate;
-static gboolean *stopwatch = FALSE,
-        *show_limits = FALSE,
-        *show_version = FALSE;
+static gboolean stopwatch = FALSE,
+        show_limits = FALSE,
+        show_version = FALSE,
+        show_bar = FALSE,
+        show_perc = FALSE,
+        show_text = TRUE;
 
 static GOptionEntry entries[] = {
+
+  {"bar",
+   0,
+   0,
+   G_OPTION_ARG_NONE,
+   &show_bar,
+   N_("show the progress bar (default) (only for timer and countdown)"),
+   NULL},
+
+  {"no-bar",
+   0,
+   G_OPTION_FLAG_REVERSE,
+   G_OPTION_ARG_NONE,
+   &show_bar,
+   N_("hide the progress bar (see --bar)"),
+   NULL},
 
   {"countdown",
    'c',
@@ -52,6 +71,22 @@ static GOptionEntry entries[] = {
    G_OPTION_ARG_NONE,
    &(show_limits),
    N_("show the limits of µTimer"),
+   NULL},
+
+  {"perc",
+   0,
+   0,
+   G_OPTION_ARG_NONE,
+   &show_perc,
+   N_("show a percentage of the time left (default) (only for timer and countdown)"),
+   NULL},
+
+  {"no-perc",
+   0,
+   G_OPTION_FLAG_REVERSE,
+   G_OPTION_ARG_NONE,
+   &show_perc,
+   N_("hide the percentage of the time left (see --perc)"),
    NULL},
 
   {"quiet",
@@ -87,6 +122,22 @@ static GOptionEntry entries[] = {
    N_("start the stopwatch. Hit 'Q' to exit"),
    NULL},
 
+  {"time",
+   0,
+   0,
+   G_OPTION_ARG_NONE,
+   &show_text,
+   N_("show time left as text (default)"),
+   NULL},
+
+  {"no-time",
+   0,
+   G_OPTION_FLAG_REVERSE,
+   G_OPTION_ARG_NONE,
+   &show_text,
+   N_("hide the text showing the time left (see --time)"),
+   NULL},
+
   {"timer",
    't',
    0,
@@ -113,6 +164,123 @@ static GOptionEntry entries[] = {
 
   {NULL}
 };
+
+/**
+ * Activate/Deactivate the canonical mode from a TTY.
+ */
+void set_tty_canonical(int state)
+{
+  struct termios ttystate;
+
+  if (state == 1)
+  {
+    g_debug("Activating canonical mode.");
+    tcgetattr(STDIN_FILENO, &ttystate);
+    ttystate.c_lflag &= ~ICANON; // remove canonical mode
+    ttystate.c_cc[VMIN] = 1; // minimum length to read before sending
+    tcsetattr(STDIN_FILENO, TCSANOW, &ttystate); // apply the changes
+  }
+  else
+  {
+    g_debug("Deactivating canonical mode.");
+    tcsetattr(STDIN_FILENO, TCSANOW, &savedttystate); // put canonical mode back
+  }
+}
+
+/**
+ * Deactivate the canoncial mode (used with atexit())
+ */
+void reset_tty_canonical_mode()
+{
+  set_tty_canonical(0);
+}
+
+/**
+ * Quits the main loop to end the program.
+ * Quits the main loop to end the program with error_status
+ * (EXIT_SUCCESS or EXIT_FAILURE).
+ */
+void quitloop(int error_status)
+{
+  g_assert(loop);
+  g_debug("%s: Stopping Main Loop (error code: %i)...", __FUNCTION__, error_status);
+
+  // We set the exit status code
+  ut_config.current_exit_status_code = error_status;
+  g_main_loop_quit(loop);
+}
+
+/**
+ * Quits the main loop with error to end the program.
+ * Quits the main loop to end the program ungracefully (EXIT_FAILURE).
+ * This function just calls quitloop(EXIT_FAILURE).
+ * This is needed for signal traps.
+ */
+void error_quitloop()
+{
+  quitloop(EXIT_FAILURE);
+}
+
+/**
+ * Quits the main loop with success code to end the program.
+ * Quits the main loop to end the program gracefully (EXIT_SUCCESS).
+ * This function just calls quitloop(EXIT_SUCCESS).
+ * This is needed for callbacks.
+ */
+void success_quitloop()
+{
+  quitloop(EXIT_SUCCESS);
+}
+
+/**
+ * Updates terminal_cols and starts waiting for signal again.
+ */
+void terminal_size_changed(gint s)
+{
+  ut_config.terminal_cols = get_terminal_width();
+  g_message("\r ");
+  g_debug("%s: Received SIGWINCH cols=%d",
+          __FUNCTION__, ut_config.terminal_cols);
+}
+
+/**
+ * Check to see if the user wants to quit.
+ * This function waits till the user hits the 'q' key to quit the program,
+ * then it will call the quitloop function. This is called by a thread
+ * to avoid blocking the program.
+ */
+int check_exit_from_user()
+{
+  set_tty_canonical(1); /* Apply canonical mode to TTY*/
+  g_atexit(reset_tty_canonical_mode); /* Deactivate canonical mode at exit */
+
+  gint c;
+  do
+  {
+    c = fgetc(stdin);
+    g_print("\b \b"); // backspace, write a space to clear, backspace again
+    switch (c)
+    {
+      case ' ':
+      {
+        if (paused)
+        {
+          g_timer_continue(ut_config.timer);
+          paused = FALSE;
+        }
+        else
+        {
+          g_timer_stop(ut_config.timer);
+          paused = TRUE;
+        }
+      }
+
+    }
+  } while (c != 'q' && c != 'Q'); /* checks for 'q' key */
+
+  /* If the user asks for exiting, we stop the loop. */
+  quitloop((ut_config.quit_with_success ? EXIT_SUCCESS : EXIT_FAILURE));
+}
 
 static void clean_up(void)
 {
@@ -177,20 +345,26 @@ int main(int argc, char *argv[])
   bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
   textdomain(GETTEXT_PACKAGE);
 
+  /* Set up the log handler */
+  setup_log_handler();
+
+  /* Handles any change of size for the terminal */
+  (void) signal(SIGWINCH, terminal_size_changed);
+  /* force the signal to get the current terminal size */
+  terminal_size_changed(0);
 
   /* Set the function to call in case of receiving signals:
    * we need to stop the main loop to exit correctly, but
    * with error code!
    */
-  signal(SIGALRM, error_quitloop);
-  signal(SIGHUP, error_quitloop);
-  signal(SIGINT, error_quitloop);
-  signal(SIGPIPE, error_quitloop);
-  signal(SIGQUIT, error_quitloop);
-  signal(SIGTERM, error_quitloop);
+  (void) signal(SIGALRM, error_quitloop);
+  (void) signal(SIGHUP, error_quitloop);
+  (void) signal(SIGINT, error_quitloop);
+  (void) signal(SIGPIPE, error_quitloop);
+  (void) signal(SIGQUIT, error_quitloop);
+  (void) signal(SIGTERM, error_quitloop);
 
-  /* Set up the log handler */
-  setup_log_handler();
+
 
   /* ------------ Initialization is done ---------- */
 
@@ -203,8 +377,7 @@ int main(int argc, char *argv[])
   g_option_context_set_summary(context, SUMMARY);
 
   tmp = g_strconcat(DESCRIPTION,
-                    _("\nReport any bug to: https://bugs.launchpad.net/utimer\
- (bugs@utimer.codealpha.net)"),
+                    _("\nReport any bug to: https://bugs.launchpad.net/utimer/+filebug"),
                     NULL);
   g_option_context_set_description(context, tmp);
   g_free(tmp);
@@ -233,7 +406,7 @@ int main(int argc, char *argv[])
         || countdown_info
         || stopwatch))
   {
-    g_printerr(_("No option has been specified!\n"));
+    g_printerr(_("No main option (-t, -c or -s) has been specified!\n"));
     g_printerr(_("Run '%s --help' to see a full list of available command\
  line options.\n"), argv[0]);
     exit(EXIT_FAILURE);
@@ -316,14 +489,18 @@ int main(int argc, char *argv[])
 
   loop = g_main_loop_new(NULL, FALSE);
 
-  //TODO: this is not clear how it stops the loop!
-  g_idle_add((GSourceFunc) start_thread_exit_check, ttimer);
-
   /* -------------- TIMER & COUNTDOWN MODE -------------- */
   if (timer_info || countdown_info || stopwatch)
   {
+    g_debug("Setting up default precision");
     timer_precision precision = TIMER_PRECISION_MILLISECOND;
-
+    g_debug("Setting up default display");
+    g_debug("perc %i", show_perc);
+    g_debug("text %i", show_text);
+    g_debug("bar %i", show_bar);
+    timer_display options_timer_display = { .perc = show_perc,
+                                            .text = show_text,
+                                            .bar = show_bar };
 
     /* set up refresh rate if given */
     if (refresh_rate)
@@ -345,18 +522,18 @@ int main(int argc, char *argv[])
     {
       g_debug("Countdown Mode");
       parse_time_pattern(countdown_info, &(seconds), &(mseconds));
-      ttimer = timer_new_countdown(seconds, mseconds, success_quitloop, error_quitloop, ut_config.timer, precision);
+      ttimer = timer_new_countdown(seconds, mseconds, success_quitloop, error_quitloop, ut_config.timer, precision, &options_timer_display);
     }
     else if (timer_info)
     {
       g_debug("Timer Mode");
       parse_time_pattern(timer_info, &(seconds), &(mseconds));
-      ttimer = timer_new_timer(seconds, mseconds, success_quitloop, error_quitloop, ut_config.timer, precision);
+      ttimer = timer_new_timer(seconds, mseconds, success_quitloop, error_quitloop, ut_config.timer, precision, &options_timer_display);
     }
     else
     {
       g_debug("Stopwatch Mode");
-      ttimer = timer_new_stopwatch(success_quitloop, error_quitloop, ut_config.timer, precision);
+      ttimer = timer_new_stopwatch(success_quitloop, error_quitloop, ut_config.timer, precision, &options_timer_display);
     }
 
     tmp = timer_get_maximum_time();
@@ -379,7 +556,17 @@ int main(int argc, char *argv[])
                                                   (GSourceFunc) timer_print,
                                                   ttimer);
     if (ttimer->mode != TIMER_MODE_STOPWATCH)
-      g_idle_add((GSourceFunc) timer_run_checkloop_thread, ttimer);
+    {
+      g_debug("Starting Timer thread");
+
+      if (!g_thread_create((GThreadFunc) timer_check_loop, ttimer, FALSE, &error))
+      {
+        g_printerr(_("Thread creation failed: %s"), error->message);
+        g_error_free(error);
+        error_quitloop();
+        exit(EXIT_FAILURE);
+      }
+    }
   } /* -------------- END TIMER & COUNTDOWN MODE -------------- */
   else
   {
@@ -387,6 +574,14 @@ int main(int argc, char *argv[])
     g_idle_add((GSourceFunc) error_quitloop, NULL);
   }
 
+  g_debug("Creating thread exit check");
+  if (!g_thread_create((GThreadFunc) check_exit_from_user, NULL, FALSE, &error))
+  {
+    // thread creation failed!
+    g_printerr(_("Thread creation failed: %s"), error->message);
+    g_error_free(error);
+    exit(EXIT_FAILURE);
+  }
 
   /* ------------- MAIN LOOP ---------------- */
 
@@ -399,6 +594,7 @@ int main(int argc, char *argv[])
   /* Print the timer one more time to show the actual time (in case of slow
    * refresh rates. */
   timer_print(ttimer);
+
 
   /* ------------- END OF MAIN LOOP ---------------- */
 

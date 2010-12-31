@@ -25,6 +25,8 @@
   #define TIMER_H
 
   #include "utils.h"
+  #define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
+  #define TIMER_PERC_IGNORE_MSEC_THRESHOLD 1000 // lower bound of when to ignore milliseconds (in seconds)
 
 typedef struct
 {
@@ -43,11 +45,19 @@ typedef enum
 
 typedef enum
 {
+  TIMER_PRECISION_DEFAULT,
   TIMER_PRECISION_MILLISECOND,
   TIMER_PRECISION_SECOND,
   TIMER_PRECISION_MINUTE,
   TIMER_PRECISION_HOUR
 } timer_precision;
+
+typedef struct
+{
+  gboolean perc: 1, text: 1, bar: 1; 
+} timer_display;
+
+
 
 typedef struct
 {
@@ -60,10 +70,11 @@ typedef struct
   timer_mode mode;
   gboolean checkloop_thread_stop_with_error;
   timer_precision precision;
+  timer_display display;
 } ut_timer;
 
 gboolean timer_print(ut_timer *t);
-gboolean timer_stop_checkloop_thread(ut_timer *t);
+gboolean timer_check_loop(ut_timer *t);
 gboolean timer_run_checkloop_thread(ut_timer *t);
 gboolean parse_time_pattern(gchar *pattern, guint *seconds, guint *mseconds);
 void timer_add_seconds(ut_timer* timer, guint seconds);
@@ -78,15 +89,21 @@ ut_timer* timer_new_timer(guint seconds,
                           GVoidFunc success_callback,
                           GVoidFunc error_callback,
                           GTimer* timer,
-                          timer_precision precision);
+                          timer_precision precision,
+                          const timer_display* display);
 ut_timer* timer_new_countdown(guint seconds,
                               guint mseconds,
                               GVoidFunc success_callback,
                               GVoidFunc error_callback,
                               GTimer* timer,
-                              timer_precision precision);
+                              timer_precision precision,
+                              const timer_display* display);
 ut_timer* timer_new_stopwatch(GVoidFunc success_callback,
                               GVoidFunc error_callback,
                               GTimer* timer,
-                              timer_precision precision);
+                              timer_precision precision,
+                              const timer_display* display);
+gint8 timer_get_progress_percent(const ut_timer *t);
+void inline timer_set_precision (ut_timer *t, timer_precision precision);
+void inline timer_set_display (ut_timer *t, timer_display display);
 #endif /* TIMER_H */

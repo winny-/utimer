@@ -34,7 +34,13 @@
 #include "utimer.h"
 #include "timer.h"
 
-static GTimeValDiff timer_get_diff(ut_timer *timer)
+static timer_display timer_default_display = {
+                                              .bar  = 0,
+                                              .text = 1,
+                                              .perc = 1
+};
+
+static GTimeValDiff timer_get_diff(const ut_timer *timer)
 {
   GTimeValDiff diff;
   gulong tmpul;
@@ -80,24 +86,88 @@ static GTimeValDiff countdown_get_diff(ut_timer *t)
   return diff;
 }
 
+/** Prints the remaining time
+ * This function prints the remaining time to STDOUT with the format specified
+ * by the timer_display in the given ut_timer (t->display).
+ * @param t a pointer to a ut_timer
+ */
 gboolean timer_print(ut_timer *t)
 {
+  gushort orig_width = get_terminal_width();
+  // substract 2 to cols: one for the ending space, one extra in case user hits a key
+  gushort width_left = orig_width - 2;
+
+  // if there is not even 2 cols to use, do nothing
+  if (width_left < 2)
+    return TRUE;
+
   GTimeValDiff delta;
-  gchar* tmpchar;
+  gchar *main_str = g_strdup(""),
+        *perc_str = NULL,
+        *text_str = NULL,
+        *bar_str = NULL;
+  gint8 perc = timer_get_progress_percent(t);
+  g_assert_cmpint(perc, >=, 0);
 
   if (t->mode == TIMER_MODE_COUNTDOWN)
     delta = countdown_get_diff(t);
   else
     delta = timer_get_diff(t);
 
-  tmpchar = timer_gtvaldiff_to_string(delta, t->precision);
+  if (perc < 0)
+    perc = 0;
 
-  if (t->mode == TIMER_MODE_COUNTDOWN)
-    g_message(_("\rTime Remaining: %s "), tmpchar); /* trailing space needed! */
-  else
-    g_message(_("\rElapsed Time: %s "), tmpchar); /* trailing space needed! */
 
-  g_free(tmpchar);
+  if (t->display.text)
+  {
+    gchar *time_text = timer_sec_msec_to_string(delta.tv_sec, delta.tv_usec / 1000, t->precision);
+    if (t->mode == TIMER_MODE_COUNTDOWN)
+      text_str = g_strdup_printf(_("Time Remaining: %s"), time_text);
+    else
+      text_str = g_strdup_printf(_("Elapsed Time: %s"), time_text);
+    g_free(time_text);
+  }
+
+  if (t->display.perc)
+    perc_str = g_strdup_printf(" (%i%%)", perc);
+
+  /* Print to STDOUT depending on width left */
+
+  // see if the Time text fits
+  if (t->display.text && width_left >= strlen(text_str)+1)
+  {
+    gchar *tmp = main_str;
+    main_str = g_strconcat(main_str, text_str, " ", NULL);
+    g_free(tmp);
+    width_left -= strlen(text_str)+1;
+  }
+
+  // see if the percentage fits (when there is no bar)
+  if (t->display.perc && width_left >= strlen(perc_str)+1)
+  {
+    gchar *tmp = main_str;
+    main_str = g_strconcat(main_str, perc_str, " ", NULL);
+    g_free(tmp);
+    width_left -= strlen(perc_str)+1;
+  }
+
+  // see if the bar fits
+  // Actually it is dynamic, so we only check if there's at least 3 chars available)
+  if (t->display.bar && width_left >= 3)
+  {
+    bar_str = get_progress_bar(perc, width_left-1, (t->mode != TIMER_MODE_COUNTDOWN));
+    gchar *tmp = main_str;
+    main_str = g_strconcat(main_str, bar_str, " ", NULL);
+    g_free(tmp);
+    width_left -= strlen(bar_str)+1;
+  }
+
+  g_message("\r%s ",main_str); /* trailing space needed! */
+  
+  g_free(main_str);
+  g_free(perc_str);
+  g_free(text_str);
+  g_free(bar_str);
 
   return TRUE;
 }
@@ -119,7 +189,7 @@ gboolean timer_check_loop(ut_timer *t)
   {
     elapsed = timer_get_diff(t);
 
-    if (elapsed.tv_sec < wanted_sec || elapsed.tv_sec == wanted_sec && elapsed.tv_usec < wanted_usec)
+    if (G_LIKELY(elapsed.tv_sec < wanted_sec || elapsed.tv_sec == wanted_sec && elapsed.tv_usec < wanted_usec))
     {
 
       guint remaining_sec = wanted_sec - elapsed.tv_sec;
@@ -148,7 +218,7 @@ gboolean timer_check_loop(ut_timer *t)
       }
 
       /* if less than a second is remaining and rate is too big */
-      if (remaining_sec == 0 && TIMER_CHECK_RATE_MSEC * 1000 > remaining_usec)
+      if (G_UNLIKELY(remaining_sec == 0 && TIMER_CHECK_RATE_MSEC * 1000 > remaining_usec))
       {
         g_debug("sleeping for remaining: %u us (< %u us)", remaining_usec, TIMER_CHECK_RATE_MSEC * 1000);
         g_usleep(remaining_usec); /* we sleep for the remaining part */
@@ -179,33 +249,6 @@ gboolean timer_check_loop(ut_timer *t)
   if (t->success_callback)
     t->success_callback();
   return TRUE;
-}
-
-gboolean timer_stop_checkloop_thread(ut_timer *t)
-{
-  if (!t)
-    return FALSE;
-  g_debug("%s: request to stop checkloop thread", __FUNCTION__);
-  g_debug("%s: checkloop_thread_stop_with_error = %d", __FUNCTION__, t->checkloop_thread_stop_with_error);
-  t->checkloop_thread_stop_with_error = TRUE;
-  g_debug("%s: checkloop_thread_stop_with_error = %d", __FUNCTION__, t->checkloop_thread_stop_with_error);
-  return TRUE;
-}
-
-gboolean timer_run_checkloop_thread(ut_timer *t)
-{
-  GError *error = NULL;
-
-  g_debug("Starting Timer thread");
-
-  if (!g_thread_create((GThreadFunc) timer_check_loop, t, FALSE, &error))
-  {
-    g_printerr(_("Thread creation failed: %s"), error->message);
-    g_error_free(error);
-    error_quitloop();
-  }
-
-  return FALSE; // return FALSE to get removed from the main loop
 }
 
 gchar* timer_get_maximum_time()
@@ -356,18 +399,19 @@ gchar* timer_gtvaldiff_to_string(GTimeValDiff g, timer_precision precision /* = 
 
 gchar* timer_ut_timer_to_string(ut_timer *g)
 {
-  if (!g)
+  if (G_UNLIKELY(!g))
     return NULL;
   return timer_sec_msec_to_string(g->seconds, g->mseconds, g->precision);
 }
 
-ut_timer* timer_new(guint seconds,
-                    guint mseconds,
-                    timer_mode mode,
-                    GVoidFunc success_callback,
-                    GVoidFunc error_callback,
-                    GTimer* timer,
-                    timer_precision precision)
+static ut_timer* timer_new(guint seconds,
+                           guint mseconds,
+                           timer_mode mode,
+                           GVoidFunc success_callback,
+                           GVoidFunc error_callback,
+                           GTimer* timer,
+                           timer_precision precision /* = TIMER_PRECISION_DEFAULT */,
+                           const timer_display* display /* = NULL */)
 {
   if (!timer)
   {
@@ -396,7 +440,9 @@ ut_timer* timer_new(guint seconds,
   t->success_callback = success_callback;
   t->error_callback = error_callback;
   t->gtimer = timer;
-  t->precision = precision;
+  timer_set_precision(t, precision);
+  timer_set_display(t, display ? *display : timer_default_display);
+
   return t;
 }
 
@@ -405,9 +451,10 @@ ut_timer* timer_new_timer(guint seconds,
                           GVoidFunc success_callback,
                           GVoidFunc error_callback,
                           GTimer* timer,
-                          timer_precision precision)
+                          timer_precision precision,
+                          const timer_display* display)
 {
-  return timer_new(seconds, mseconds, TIMER_MODE_TIMER, success_callback, error_callback, timer, precision);
+  return timer_new(seconds, mseconds, TIMER_MODE_TIMER, success_callback, error_callback, timer, precision, display);
 }
 
 ut_timer* timer_new_countdown(guint seconds,
@@ -415,17 +462,19 @@ ut_timer* timer_new_countdown(guint seconds,
                               GVoidFunc success_callback,
                               GVoidFunc error_callback,
                               GTimer* timer,
-                              timer_precision precision)
+                              timer_precision precision,
+                              const timer_display* display)
 {
-  return timer_new(seconds, mseconds, TIMER_MODE_COUNTDOWN, success_callback, error_callback, timer, precision);
+  return timer_new(seconds, mseconds, TIMER_MODE_COUNTDOWN, success_callback, error_callback, timer, precision, display);
 }
 
 ut_timer* timer_new_stopwatch(GVoidFunc success_callback,
                               GVoidFunc error_callback,
                               GTimer* timer,
-                              timer_precision precision)
+                              timer_precision precision,
+                              const timer_display* display)
 {
-  return timer_new(0, 0, TIMER_MODE_STOPWATCH, success_callback, error_callback, timer, precision);
+  return timer_new(0, 0, TIMER_MODE_STOPWATCH, success_callback, error_callback, timer, precision, display);
 }
 
 /** Destroy the ut_timer and assigns NULL to t
@@ -441,4 +490,46 @@ gboolean timer_destroy(ut_timer* t)
   t = NULL;
 
   return TRUE;
+}
+
+gint8 timer_get_progress_percent(const ut_timer *t)
+{
+  if (!t)
+    return -1;
+
+  GTimeValDiff elapsed = timer_get_diff(t);
+
+  gdouble perc = 0;
+
+  // if we can ignore the milliseconds
+  if (t->seconds >= TIMER_PERC_IGNORE_MSEC_THRESHOLD)
+  {
+    g_debug("%s: ignoring milliseconds", __FUNCTION__);
+    perc = 100 * elapsed.tv_sec / t->seconds;
+  }
+  else
+  {
+    g_debug("%s: taking milliseconds into account", __FUNCTION__);
+    g_assert_cmpuint(elapsed.tv_sec, <=, TIMER_PERC_IGNORE_MSEC_THRESHOLD);
+    g_assert_cmpuint(t->seconds, <=, TIMER_PERC_IGNORE_MSEC_THRESHOLD);
+
+    if (G_LIKELY(t->seconds > 0 || t->mseconds > 0))
+      perc = (gdouble) (elapsed.tv_sec * 1000 + elapsed.tv_usec / 1000) * 100 / (gdouble) (t->seconds * 1000 + t->mseconds);
+    else
+      perc = 100;
+
+  }
+
+  g_debug("%s: calculated perc: %.2f", __FUNCTION__, perc);
+  return (gint8) round(perc);
+}
+
+void inline timer_set_precision(ut_timer *t, timer_precision precision)
+{
+  t->precision = (precision == TIMER_PRECISION_DEFAULT ? TIMER_PRECISION_MILLISECOND : precision);
+}
+
+void inline timer_set_display(ut_timer *t, timer_display display)
+{
+  t->display = display;
 }
