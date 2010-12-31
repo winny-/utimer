@@ -61,14 +61,8 @@ Starts the stopwatch and runs until it is stopped by hitting the 'Q' key or by o
 .B USAGE
 section to read more about how to use the stopwatch.
 .B
-.IP --refresh-rate=RATE\ |\ \-r\ RATE
-Used to specify a display refresh rate. This purposedly slows down the refresh rate and hides the unneeded time units. RATE can be 'm' for every minute, 's' for every second, 'ms' for every millisecond (actually every ~0.1s). This option can be useful to lower CPU usage or reduce the workload of your terminal (lower erase-and-print frequency). Default is 'ms'.
-.B
-.IP --verbose\ |\ \-v
-Print more information during the program's process. (note that if used with -q, this option is ignored)
-.B
-.IP --quiet\ |\ \-q
-Quiet or silent output (almost no output) (note that if used with -v, -v is ignored).
+.IP --bar
+Show a progress bar representing the time left to go. (see also --time and --perc)
 .B
 .IP --debug\ |\ \-D
 Show debug information in output (should ONLY be used for bug reporting, for developers or for testing purposes).
@@ -78,8 +72,26 @@ Display the limits of
 .B µTimer
 for your machine (maximum values, longest timer, ...). It may be not be perfectly accurate. Use this option only to have an idea of what it can do.
 .B
+.IP --perc
+Show a percentage representing the time already elapsed. (see also --time and --bar)
+.B
+.IP --quiet\ |\ \-q
+Quiet or silent output (almost no output) (note that if used with -v, -v is ignored).
+.B
 .IP --quit-with-success\ |\ \-Q
 When you quit the program using the 'q' key, it will exit with a success exit status code, instead of an error one normally. (Note that 'ctrl+c' isn't affected by this option)
+.B
+.IP --refresh-rate=RATE\ |\ \-r\ RATE
+Used to specify a display refresh rate. This purposedly slows down the refresh rate and hides the unneeded time units. RATE can be 'm' for every minute, 's' for every second, 'ms' for every millisecond (actually every ~0.1s). This option can be useful to lower CPU usage or reduce the workload of your terminal (lower erase-and-print frequency). Default is 'ms'.
+.B
+.IP --time
+Show the elapsed/remaining time as text. (Default). See also --bar and --perc.
+.B
+.IP --no-time
+Do not show the elapsed/remaining time (or current time for the stopwatch).
+.B
+.IP --verbose\ |\ \-v
+Print more information during the program's process. (note that if used with -q, this option is ignored)
 .SH "USAGE"
 .B
 .IP Timer:

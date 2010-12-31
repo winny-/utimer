@@ -38,15 +38,7 @@ static GOptionEntry entries[] = {
    0,
    G_OPTION_ARG_NONE,
    &show_bar,
-   N_("show the progress bar (default) (only for timer and countdown)"),
-   NULL},
-
-  {"no-bar",
-   0,
-   G_OPTION_FLAG_REVERSE,
-   G_OPTION_ARG_NONE,
-   &show_bar,
-   N_("hide the progress bar (see --bar)"),
+   N_("show a progress bar representing the remaining/elapsed time"),
    NULL},
 
   {"countdown",
@@ -78,15 +70,7 @@ static GOptionEntry entries[] = {
    0,
    G_OPTION_ARG_NONE,
    &show_perc,
-   N_("show a percentage of the time left (default) (only for timer and countdown)"),
-   NULL},
-
-  {"no-perc",
-   0,
-   G_OPTION_FLAG_REVERSE,
-   G_OPTION_ARG_NONE,
-   &show_perc,
-   N_("hide the percentage of the time left (see --perc)"),
+   N_("show a percentage representing the elapsed time"),
    NULL},
 
   {"quiet",
@@ -127,7 +111,7 @@ static GOptionEntry entries[] = {
    0,
    G_OPTION_ARG_NONE,
    &show_text,
-   N_("show time left as text (default)"),
+   N_("show elapsed/remaining time as text (default)"),
    NULL},
 
   {"no-time",
@@ -135,7 +119,7 @@ static GOptionEntry entries[] = {
    G_OPTION_FLAG_REVERSE,
    G_OPTION_ARG_NONE,
    &show_text,
-   N_("hide the text showing the time left (see --time)"),
+   N_("do not show the text telling the elapsed/remaining time (see --time)"),
    NULL},
 
   {"timer",
