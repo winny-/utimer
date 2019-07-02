@@ -18,7 +18,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with uTimer.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 
@@ -163,7 +163,7 @@ gboolean timer_print(ut_timer *t)
   }
 
   g_message("\r%s ",main_str); /* trailing space needed! */
-  
+
   g_free(main_str);
   g_free(perc_str);
   g_free(text_str);

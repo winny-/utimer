@@ -18,14 +18,14 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with uTimer.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 #ifndef LOG_H
 #define LOG_H
 
 #ifndef g_info
 #define g_info(format...) g_log(G_LOG_DOMAIN, G_LOG_LEVEL_INFO, format)
-#endif 
+#endif
 
 
 

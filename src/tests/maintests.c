@@ -18,7 +18,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with uTimer.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -38,7 +38,7 @@
 
 #ifdef G_DISABLE_ASSERT
   #undef G_DISABLE_ASSERT
-#endif 
+#endif
 
 
 #define TEST_DURATION_MAX_OFFSET_MSECONDS 100

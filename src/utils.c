@@ -18,7 +18,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with uTimer.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -181,7 +181,7 @@ gchar* get_progress_bar(gint8 perc, gushort width, gboolean go_right)
   gushort real_width = 0;
   if (width >= 2)
     real_width = width - 2; // we exclude the outside brackets
-    
+
   gushort bar_length = (guint) real_width * (guint) perc / 100;
   gushort empty_length = real_width - bar_length;
 
@@ -227,4 +227,3 @@ gchar* get_progress_bar(gint8 perc, gushort width, gboolean go_right)
   //g_debug("my progress bar: %s", ret);
   return ret;
 }
-

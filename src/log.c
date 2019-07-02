@@ -18,7 +18,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with uTimer.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -38,7 +38,7 @@ static void log_handler (const gchar *log_domain,
                         const gchar *message,
                         gpointer user_data)
 {
-  
+
   if ((log_level & G_LOG_LEVEL_MESSAGE))
   {
     if (!ut_config.quiet)
@@ -46,27 +46,27 @@ static void log_handler (const gchar *log_domain,
                                * (must be handled when calling g_message) */
     return;
   }
-  
+
   if ((log_level & G_LOG_LEVEL_INFO))
   {
     if (!ut_config.quiet && ut_config.verbose)
       g_print ("%s\n", message);
     return;
   }
-    
+
   if ((log_level & G_LOG_LEVEL_DEBUG))
   {
     if (ut_config.debug)
       g_print ("** DEBUG: %s\n", message);
     return;
   }
-    
+
   if ((log_level & G_LOG_LEVEL_WARNING))
   {
     g_print (_("** WARNING: %s\n"), message);
     return;
   }
-  
+
 }
 
 
